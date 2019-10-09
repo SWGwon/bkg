@@ -857,8 +857,8 @@ void neutron(string filename)
     hist_bkg_1->Write();
     KE_primary->Write();
     KE_secondary->Write();
-    PDG->Write();
-    PDG_case4->Write();
+    neutronParentPDG->Write();
+    neutronParentPDG_case4->Write();
     fi1->Close();
 
     /*
