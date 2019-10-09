@@ -40,11 +40,13 @@
 #include "TSpline.h"
 using namespace std;
 //histograms{
-
 TH2F * hist_signal = new TH2F("hist_signal", "hist_signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "hist_bkg_out3DST;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "hist_bkg_NC;Lever Arm [cm]; Time [ns]", 20, 0, 2000, 25, 0, 250);
 TH2F * hist_bkg_1 = new TH2F("hist_bkg_1", "hist_bkg_1;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+
+TH1F * neutronParentPDG = new TH1F("PDG","PDG",3500,-500,3000);
+TH1F * neutronParentPDG_case4 = new TH1F("PDG_case4","PDG_case4",6,0,6);
 
 TH1D * KE_secondary = new TH1D("seconday","seconday",100,0,200);
 TH1D * KE_primary = new TH1D("primary","primary",100,0,200);
@@ -127,7 +129,7 @@ void analyze(string file)
 
     int nevents = tree->GetEntries();
 
-    //cout<<"number of event: "<<nevents<<endl;
+    Hit_t signal;
 
     for(int event = 0; event < nevents; event++)
     {
@@ -251,13 +253,18 @@ void analyze(string file)
                 //cout<<"there is signal"<<endl;
                 //doing signal stuff using sig_earliestHit
                 hist_signal->Fill(sig_earliestHit.trackLength,sig_earliestHit.timeWindow);
+                if(signal.timeWindow != sig_earliestHit.timeWindow)
+                {
+                    signal = sig_earliestHit;
+                }
             }
         }
     }       //end of event iterate
 
     if(!is_Sig)
     {
-        _file->Close();
+        //cout<<"there is no signal"<<endl;
+        fi->Close();
         return;
     }
 
@@ -334,12 +341,12 @@ BACKGROUND : Neutron information
                 {
                     //calculate distance from FV vertex
                     float trackLength = pow(
-                            pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
-                            pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
-                            pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+                            pow(t_neutronHitX[n_neutronHit] - signal.vtxSignal[0],2)+
+                            pow(t_neutronHitY[n_neutronHit] - signal.vtxSignal[1],2)+
+                            pow(t_neutronHitZ[n_neutronHit] - signal.vtxSignal[2],2),0.5);
 
-                    //calculate signal window; time of flight
-                    float backgroundWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                    //calculate signal window; 
+                    float backgroundWindow = t_neutronHitT[n_neutronHit] - signal.vtxTime;
 
                     //Fix a bug from edep-sim
                     if(backgroundWindow == 1)
@@ -432,12 +439,12 @@ BACKGROUND : Neutron information
                 {
                     //calculate distance from FV vertex
                     float trackLength = pow(
-                            pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
-                            pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
-                            pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+                            pow(t_neutronHitX[n_neutronHit] - signal.vtxSignal[0],2)+
+                            pow(t_neutronHitY[n_neutronHit] - signal.vtxSignal[1],2)+
+                            pow(t_neutronHitZ[n_neutronHit] - signal.vtxSignal[2],2),0.5);
 
                     //calculate signal window; time of flight
-                    float backgroundWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                    float backgroundWindow = t_neutronHitT[n_neutronHit] - signal.vtxTime;
 
                     //Fix a bug from edep-sim
                     if(backgroundWindow == 1)
@@ -530,12 +537,12 @@ BACKGROUND : Neutron information
                 {
                     //calculate distance from FV vertex
                     float trackLength = pow(
-                            pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
-                            pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
-                            pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+                            pow(t_neutronHitX[n_neutronHit] - signal.vtxSignal[0],2)+
+                            pow(t_neutronHitY[n_neutronHit] - signal.vtxSignal[1],2)+
+                            pow(t_neutronHitZ[n_neutronHit] - signal.vtxSignal[2],2),0.5);
 
                     //calculate signal window; time of flight
-                    float backgroundWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                    float backgroundWindow = t_neutronHitT[n_neutronHit] - signal.vtxTime;
 
                     //Fix a bug from edep-sim
                     if(backgroundWindow == 1)
@@ -627,12 +634,12 @@ BACKGROUND : Neutron information
                 {
                     //calculate distance from FV vertex
                     float trackLength = pow(
-                            pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
-                            pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
-                            pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+                            pow(t_neutronHitX[n_neutronHit] - signal.vtxSignal[0],2)+
+                            pow(t_neutronHitY[n_neutronHit] - signal.vtxSignal[1],2)+
+                            pow(t_neutronHitZ[n_neutronHit] - signal.vtxSignal[2],2),0.5);
 
                     //calculate signal window; time of flight
-                    float backgroundWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                    float backgroundWindow = t_neutronHitT[n_neutronHit] - signal.vtxTime;
 
                     //Fix a bug from edep-sim
                     if(backgroundWindow == 1)
@@ -707,8 +714,21 @@ BACKGROUND : Neutron information
 
             if(bkg_earliestHit_outFV_in3DST_secondary.timeWindow != 1000)
             {
-                cout<<"secondary KE:"<<kineticEnergy(bkg_earliestHit_outFV_in3DST_secondary.trackLength,bkg_earliestHit_outFV_in3DST_secondary.timeWindow)<<endl;
+                //cout<<"secondary KE:"<<kineticEnergy(bkg_earliestHit_outFV_in3DST_secondary.trackLength,bkg_earliestHit_outFV_in3DST_secondary.timeWindow)<<endl;
                 KE_secondary->Fill(kineticEnergy(bkg_earliestHit_outFV_in3DST_secondary.trackLength,bkg_earliestHit_outFV_in3DST_secondary.timeWindow));
+                neutronParentPDG->Fill(bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg);
+                if(abs(bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg) == 211 || bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg == 111)
+                    neutronParentPDG_case4->Fill(1);        //PDG = +-211,111
+                if(bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg ==2112)
+                    neutronParentPDG_case4->Fill(2);        //PDG = 2112
+                if(bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg == 2212)
+                    neutronParentPDG_case4->Fill(3);        //PDG = 2212
+                if(abs(bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg) != 211 &&
+                        bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg != 111 &&
+                        bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg != 2112 &&
+                        bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg != 2212 &&
+                        bkg_earliestHit_outFV_in3DST_secondary.neutronParentPdg != 0)
+                    neutronParentPDG_case4->Fill(4);        //PDG = others axcept 0
             }
         }
 
@@ -725,12 +745,12 @@ BACKGROUND : Neutron information
                 {
                     //calculate distance from FV vertex
                     float trackLength = pow(
-                            pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
-                            pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
-                            pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+                            pow(t_neutronHitX[n_neutronHit] - signal.vtxSignal[0],2)+
+                            pow(t_neutronHitY[n_neutronHit] - signal.vtxSignal[1],2)+
+                            pow(t_neutronHitZ[n_neutronHit] - signal.vtxSignal[2],2),0.5);
 
                     //calculate signal window; time of flight
-                    float backgroundWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                    float backgroundWindow = t_neutronHitT[n_neutronHit] - signal.vtxTime;
 
                     //Fix a bug from edep-sim
                     if(backgroundWindow == 1)
@@ -804,14 +824,15 @@ BACKGROUND : Neutron information
 
             if(bkg_earliestHit_outFV_in3DST_primary.timeWindow != 1000)
             {
-                cout<<"primary KE:"<<kineticEnergy(bkg_earliestHit_outFV_in3DST_primary.trackLength,bkg_earliestHit_outFV_in3DST_primary.timeWindow)<<endl;
+                //cout<<"primary KE:"<<kineticEnergy(bkg_earliestHit_outFV_in3DST_primary.trackLength,bkg_earliestHit_outFV_in3DST_primary.timeWindow)<<endl;
                 KE_primary->Fill(kineticEnergy(bkg_earliestHit_outFV_in3DST_primary.trackLength,bkg_earliestHit_outFV_in3DST_primary.timeWindow));
             }
 
         }       //end of if(outFV_in3DST)
     }       //end of for(int event = 0; event < nevents; event++)
-}
 
+    _file->Close();
+}
 void neutron(string filename)
 {
     ifstream input(filename);
