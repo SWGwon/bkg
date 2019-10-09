@@ -54,6 +54,7 @@ TH1D * KE_primary = new TH1D("primary","primary",100,0,200);
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
+
 struct Hit_t 
 {
     float timeWindow,           // time windows of the hit
@@ -92,6 +93,8 @@ float energyHitCut = 0.5; //energy deposit threshold for cube
 
 void analyze(string file)
 {
+    //TFile * fi = new TFile("/Users/gwon/FHC_1.root");
+    //cout<<file<<endl;     //cout file name
     auto _file = new TFile(TString(file));
     auto tree = (TTree*)_file->Get("tree");
 
@@ -130,6 +133,8 @@ void analyze(string file)
     int nevents = tree->GetEntries();
 
     Hit_t signal;
+
+    //cout<<"number of event: "<<nevents<<endl;
 
     for(int event = 0; event < nevents; event++)
     {
@@ -237,6 +242,7 @@ void analyze(string file)
                     }
                 }
             }   //end of n_neutronhit iterate
+
             Hit_t sig_earliestHit;
             sig_earliestHit.timeWindow = 1000;
 
@@ -253,10 +259,7 @@ void analyze(string file)
                 //cout<<"there is signal"<<endl;
                 //doing signal stuff using sig_earliestHit
                 hist_signal->Fill(sig_earliestHit.trackLength,sig_earliestHit.timeWindow);
-                if(signal.timeWindow != sig_earliestHit.timeWindow)
-                {
-                    signal = sig_earliestHit;
-                }
+                signal = sig_earliestHit;
             }
         }
     }       //end of event iterate
@@ -264,7 +267,7 @@ void analyze(string file)
     if(!is_Sig)
     {
         //cout<<"there is no signal"<<endl;
-        fi->Close();
+        _file->Close();
         return;
     }
 
@@ -833,6 +836,7 @@ BACKGROUND : Neutron information
 
     _file->Close();
 }
+
 void neutron(string filename)
 {
     ifstream input(filename);
@@ -853,6 +857,8 @@ void neutron(string filename)
     hist_bkg_1->Write();
     KE_primary->Write();
     KE_secondary->Write();
+    PDG->Write();
+    PDG_case4->Write();
     fi1->Close();
 
     /*
