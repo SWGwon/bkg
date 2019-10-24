@@ -65,6 +65,9 @@ TH2F * first_n_position_XY = new TH2F("XY", "XY", 240, -120, 120, 240,-120, 120)
 TH2F * first_n_position_YZ = new TH2F("YZ", "YZ", 240, -120, 120, 200,-100, 100);
 TH2F * first_n_position_XZ = new TH2F("XZ", "XZ", 240, -120, 120, 200,-100, 100);
 
+TH1F * dist_sp_vtx = new TH1F("sp_vts" ,"from starting point to vertex", 100, 0, 100);
+TH1F * dist_sp_nh = new TH1F("sp_nh" ,"from starting point to neutron hit", 100, 0, 100);
+
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
@@ -87,6 +90,10 @@ struct Hit_t
     float neutronHitX,
           neutronHitY,
           neutronHitZ;
+
+    float neutronStartingPointX,
+          neutronStartingPointY,
+          neutronStartingPointZ;
 
     int bkgLoc,         // neutrino vertex position
         neutronParentId,    // Where the neutron come from
@@ -153,11 +160,11 @@ void analyze(string file)
     if(tree == NULL)
     {
         _file->Close();
-        cout<<"NULL"<<endl;
         return;
     }
 
     float t_neutronHitX[1000], t_neutronHitY[1000], t_neutronHitZ[1000];
+    float t_neutronStartingPointX[1000], t_neutronStartingPointY[1000], t_neutronStartingPointZ[1000];
     float t_neutronHitT[1000], t_neutronParentId[1000], t_neutronParentPDG[1000];
     float t_neutronHitE[1000], t_neutronTrueE[1000];
     float t_vtx[3], t_vtxTime;
@@ -559,6 +566,10 @@ BACKGROUND : Neutron information
                             temp.neutronHitY = t_neutronHitY[n_neutronHit];
                             temp.neutronHitZ = t_neutronHitZ[n_neutronHit];
 
+                            temp.neutronStartingPointX = t_neutronStartingPointX[n_neutronHit];
+                            temp.neutronStartingPointY = t_neutronStartingPointY[n_neutronHit];
+                            temp.neutronStartingPointZ = t_neutronStartingPointZ[n_neutronHit];
+
                             //temp.bkgLoc = 
 
                             temp.neutronParentId = t_neutronParentId[n_neutronHit];
@@ -618,22 +629,28 @@ BACKGROUND : Neutron information
             if(is_Bkg_1 && bkg_temp_1.timeWindow != 100000000 && bkg_temp_1.neutronParentPdg != 0)
             {
                 bkg_1 = bkg_temp_1;
-                if(bkg_1.timeWindow < signal.timeWindow)
-                {
-                    hist_bkg_1->Fill(bkg_1.trackLength,bkg_1.timeWindow);
-                    first_n_position_XY->Fill(bkg_1.neutronHitX,bkg_1.neutronHitY);
-                    first_n_position_YZ->Fill(bkg_1.neutronHitY,bkg_1.neutronHitZ);
-                    first_n_position_XZ->Fill(bkg_1.neutronHitX,bkg_1.neutronHitZ);
-                    //for pdg
-                    if(abs(bkg_1.neutronParentPdg) == 211 || bkg_1.neutronParentPdg == 111)
-                        hist_bkg_1_pion->Fill(bkg_1.trackLength,bkg_1.timeWindow);
-                    else if(bkg_1.neutronParentPdg == 2112)
-                        hist_bkg_1_neutron->Fill(bkg_1.trackLength,bkg_1.timeWindow);
-                    else if(bkg_1.neutronParentPdg == 2212)
-                        hist_bkg_1_proton->Fill(bkg_1.trackLength,bkg_1.timeWindow);
-                    else
-                        hist_bkg_1_other->Fill(bkg_1.trackLength,bkg_1.timeWindow);
-                }
+                //if(bkg_1.timeWindow < signal.timeWindow)
+                //{
+                dist_sp_vtx->Fill(pow(pow(bkg_1.neutronStartingPointX-signal.vtxSignal[0],2)
+                            +pow(bkg_1.neutronStartingPointY-signal.vtxSignal[1],2)
+                            +pow(bkg_1.neutronStartingPointZ-signal.vtxSignal[2],2),0.5));
+                dist_sp_nh->Fill(pow(pow(bkg_1.neutronStartingPointX-bkg_1.neutronHitX,2)
+                            +pow(bkg_1.neutronStartingPointY-bkg_1.neutronHitY,2)
+                            +pow(bkg_1.neutronStartingPointZ-bkg_1.neutronHitZ,2),0.5));
+                hist_bkg_1->Fill(bkg_1.trackLength,bkg_1.timeWindow);
+                first_n_position_XY->Fill(bkg_1.neutronHitX,bkg_1.neutronHitY);
+                first_n_position_YZ->Fill(bkg_1.neutronHitY,bkg_1.neutronHitZ);
+                first_n_position_XZ->Fill(bkg_1.neutronHitX,bkg_1.neutronHitZ);
+                //for pdg
+                if(abs(bkg_1.neutronParentPdg) == 211 || bkg_1.neutronParentPdg == 111)
+                    hist_bkg_1_pion->Fill(bkg_1.trackLength,bkg_1.timeWindow);
+                else if(bkg_1.neutronParentPdg == 2112)
+                    hist_bkg_1_neutron->Fill(bkg_1.trackLength,bkg_1.timeWindow);
+                else if(bkg_1.neutronParentPdg == 2212)
+                    hist_bkg_1_proton->Fill(bkg_1.trackLength,bkg_1.timeWindow);
+                else
+                    hist_bkg_1_other->Fill(bkg_1.trackLength,bkg_1.timeWindow);
+                //}
             }
         }       //end of if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50) 
 
@@ -999,7 +1016,7 @@ BACKGROUND : Neutron information
     _file->Close();
 }
 
-void neutron(string filename)
+void neutron()
 {
     int endPROD, beginPROD;
     cout<<"PROD begin :"<<endl;
@@ -1012,9 +1029,11 @@ void neutron(string filename)
         for(int i = 1; i <1001; i++)
         {
             cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
-            //analyze(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
-            //analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
-            num_interaction(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
+            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d.root",j,i));
+            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d.root",j,i));
+            analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d_test.root",j,i));
+            analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
+            //num_interaction(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
             //num_interaction(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
         }
         cout<<endl;
@@ -1044,6 +1063,8 @@ void neutron(string filename)
     first_n_position_XY->Write();
     first_n_position_YZ->Write();
     first_n_position_XZ->Write();
+    dist_sp_vtx->Write();
+    dist_sp_nh->Write();
     fi1->Close();
 
     TCanvas * can = new TCanvas;
@@ -1089,5 +1110,4 @@ void neutron(string filename)
     first_n_position_XZ->Draw("colz");
     can5->SaveAs("neutron_position.pdf");
 
-    return 0;
 }
