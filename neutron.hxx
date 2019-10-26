@@ -41,17 +41,17 @@
 
 using namespace std;
 //histograms{
-TH2F * hist_signal = new TH2F("hist_signal", "hist_signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "hist_bkg_out3DST;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "hist_bkg_NC;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1 = new TH2F("hist_bkg_1", "hist_bkg_1;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1_pion = new TH2F("hist_bkg_1_pion", "hist_bkg_1_pion;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1_neutron = new TH2F("hist_bkg_1_neutron", "hist_bkg_1_neutron;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1_proton = new TH2F("hist_bkg_1_proton", "hist_bkg_1_proton;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1_other = new TH2F("hist_bkg_1_other", "hist_bkg_1_other;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_out3DST_largeTime = new TH2F("hist_bkg_out3DST_lt", "hist_bkg_out3DST;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
-TH2F * hist_bkg_NC_largeTime = new TH2F("hist_bkg_NC_lt", "hist_bkg_NC;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
-TH2F * hist_bkg_1_largeTime = new TH2F("hist_bkg_1_lt", "hist_bkg_1;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
+TH2F * hist_signal = new TH2F("hist_signal", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "out3DST background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "NC background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1 = new TH2F("hist_bkg_1", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_pion = new TH2F("hist_bkg_1_pion", "secondary background comming from pion;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_neutron = new TH2F("hist_bkg_1_neutron", "secondary background comming from neutron;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_proton = new TH2F("hist_bkg_1_proton", "secondary background comming from proton;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_other = new TH2F("hist_bkg_1_other", "secondary background comming from other;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_out3DST_largeTime = new TH2F("hist_bkg_out3DST_lt", "out3DST background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
+TH2F * hist_bkg_NC_largeTime = new TH2F("hist_bkg_NC_lt", "NC background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
+TH2F * hist_bkg_1_largeTime = new TH2F("hist_bkg_1_lt", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 100, 0, 10000);
 
 TH3F * hist_neutron_hit = new TH3F("asdf","asdf",240,-120,120,240,-120,120,200,-100,100);
 
@@ -65,8 +65,10 @@ TH2F * first_n_position_XY = new TH2F("XY", "XY", 240, -120, 120, 240,-120, 120)
 TH2F * first_n_position_YZ = new TH2F("YZ", "YZ", 240, -120, 120, 200,-100, 100);
 TH2F * first_n_position_XZ = new TH2F("XZ", "XZ", 240, -120, 120, 200,-100, 100);
 
-TH1F * dist_sp_vtx = new TH1F("sp_vts" ,"from starting point to vertex", 100, 0, 100);
+TH1F * dist_sp_vtx = new TH1F("sp_vtx" ,"from starting point to vertex", 100, 0, 100);
 TH1F * dist_sp_nh = new TH1F("sp_nh" ,"from starting point to neutron hit", 100, 0, 100);
+TH1F * dist_sig_sp_vtx = new TH1F("sp_sig_vtx" ,"from starting point to vertex", 100, 0, 100);
+TH1F * dist_sig_sp_nh = new TH1F("sp_sig_nh" ,"from starting point to neutron hit", 100, 0, 100);
 
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
@@ -151,6 +153,166 @@ void num_interaction(string file)
     }
     _file->Close();
 }
+void test_analyze(string file)
+{
+    auto _file = new TFile(TString(file));
+    auto tree = (TTree*)_file->Get("tree");
+
+    if(tree == NULL)
+    {
+        _file->Close();
+        return;
+    }
+
+    float t_neutronHitX[1000], t_neutronHitY[1000], t_neutronHitZ[1000];
+    float t_neutronStartingPointX[1000], t_neutronStartingPointY[1000], t_neutronStartingPointZ[1000];
+    float t_neutronHitT[1000], t_neutronParentId[1000], t_neutronParentPDG[1000];
+    float t_neutronHitE[1000], t_neutronTrueE[1000];
+    float t_vtx[3], t_vtxTime;
+
+    int PDG = 0;
+    int t_nFS, t_fsPdg[1000];
+
+    tree->SetBranchAddress("neutronHitX", &t_neutronHitX);
+    tree->SetBranchAddress("neutronHitY", &t_neutronHitY);
+    tree->SetBranchAddress("neutronHitZ", &t_neutronHitZ);
+    tree->SetBranchAddress("neutronStartingPointX", &t_neutronStartingPointX);
+    tree->SetBranchAddress("neutronStartingPointY", &t_neutronStartingPointY);
+    tree->SetBranchAddress("neutronStartingPointZ", &t_neutronStartingPointZ);
+    tree->SetBranchAddress("neutronHitT", &t_neutronHitT);
+    tree->SetBranchAddress("neutronParentId", &t_neutronParentId);
+    tree->SetBranchAddress("neutronParentPDG", &t_neutronParentPDG);
+    tree->SetBranchAddress("neutronHitE", &t_neutronHitE);
+    tree->SetBranchAddress("neutronTrueE", &t_neutronTrueE);
+    tree->SetBranchAddress("vtx", &t_vtx);
+    tree->SetBranchAddress("vtxTime", &t_vtxTime);
+    tree->SetBranchAddress("nFS", &t_nFS);
+    tree->SetBranchAddress("fsPdg", &t_fsPdg);
+
+    int nevents = tree->GetEntries();
+
+    for(int event = 0; event < nevents; event++)
+    {
+        tree->GetEntry(event);
+
+        if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50)
+        {
+            map<string,Hit_t> hitPerCube;
+            for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
+            {
+                if(t_neutronHitX[n_neutronHit] != 0)
+                {
+                    //look for a neutron hit in 3DST
+                    if(abs(t_neutronHitX[n_neutronHit]) < 120 && 
+                            abs(t_neutronHitY[n_neutronHit]) < 120 && 
+                            abs(t_neutronHitZ[n_neutronHit]) < 100)
+                    {
+                        hist_neutron_hit->Fill(t_neutronHitX[n_neutronHit],t_neutronHitY[n_neutronHit],t_neutronHitZ[n_neutronHit]);
+                        //calculate lever arm
+                        float trackLength = pow(
+                                pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
+                                pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
+                                pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
+
+                        //calculate signal window; time of flight
+                        float signalWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+
+                        //Fix a bug from edep-sim
+                        if(signalWindow == 1)
+                            signalWindow = 0.5;
+
+                        if(signalWindow > 0)
+                        {
+                            Hit_t temp;
+
+                            temp.timeWindow = signalWindow;
+                            temp.trackLength = trackLength;
+                            temp.energyDeposit = t_neutronHitE[n_neutronHit];
+
+                            temp.vtxSignal[0] = t_vtx[0];
+                            temp.vtxSignal[1] = t_vtx[1];
+                            temp.vtxSignal[2] = t_vtx[2];
+
+                            temp.neutronHitX = t_neutronHitX[n_neutronHit];
+                            temp.neutronHitY = t_neutronHitY[n_neutronHit];
+                            temp.neutronHitZ = t_neutronHitZ[n_neutronHit];
+                            temp.neutronTrueT = t_neutronHitT[n_neutronHit];
+
+                            temp.neutronStartingPointX = t_neutronStartingPointX[n_neutronHit];
+                            temp.neutronStartingPointY = t_neutronStartingPointY[n_neutronHit];
+                            temp.neutronStartingPointZ = t_neutronStartingPointZ[n_neutronHit];
+
+                            temp.neutronParentId = t_neutronParentId[n_neutronHit];
+                            temp.neutronParentPdg = t_neutronParentPDG[n_neutronHit];
+
+                            temp.vtxTime = t_vtxTime;
+
+                            //Positon(cm)
+                            string key = string(Form("%d_%d_%d",
+                                        (int)t_neutronHitX[n_neutronHit],
+                                        (int)t_neutronHitY[n_neutronHit],
+                                        (int)t_neutronHitZ[n_neutronHit]));
+
+                            /*
+                               +If the cube has been already activated by a neutron
+                               -See which neutron hit the cube first
+                               -Affect the first neutron hit to the cube
+                               -Sum up the energy Deposit in the cube
+                               +Affect the neutron hit to the cube otherwise
+                             */
+                            auto findKey_hitCubeEvent = hitPerCube.find(key);
+                            if(findKey_hitCubeEvent != hitPerCube.end())
+                            {
+                                if(hitPerCube.at(key).timeWindow < temp.timeWindow)
+                                {
+                                    hitPerCube.at(key).energyDeposit += temp.energyDeposit;
+                                }
+                                else
+                                {
+                                    auto tempEnergy = hitPerCube.at(key).energyDeposit;
+                                    hitPerCube.at(key) = temp;
+                                    hitPerCube.at(key).energyDeposit += tempEnergy;
+                                }
+                            }
+                            else
+                            {
+                                hitPerCube[key] = temp;     
+                            }
+                        }
+                    }
+                }
+            }   //end of n_neutronhit iterate
+
+            //cout<<"event:"<<event+1<<", number of neutron hit :"<<number_of_neutron<<endl;
+
+            Hit_t temp_sig;
+            temp_sig.timeWindow = 100000000;
+
+            for(auto hit : hitPerCube)
+            {
+                if(temp_sig.timeWindow > hit.second.timeWindow && hit.second.energyDeposit > energyHitCut && (hit.second.neutronParentId == -1 || hit.second.neutronParentId == 0))
+                {
+                    temp_sig = hit.second;
+                }
+            }
+
+
+            if(temp_sig.timeWindow != 100000000)
+            {
+                cout<<"arm :"<<temp_sig.trackLength<<", time: "<<temp_sig.timeWindow<<endl;
+                cout<<"neutron hit point: "<<temp_sig.neutronHitX<<","<<temp_sig.neutronHitY<<","<<temp_sig.neutronHitZ<<endl;
+                cout<<"neutron hit time: "<<temp_sig.neutronTrueT<<endl;
+                cout<<"parentId: "<<temp_sig.neutronParentId<<endl;
+                cout<<"neutron starting point: "<<temp_sig.neutronStartingPointX<<","<<temp_sig.neutronStartingPointY<<","<<temp_sig.neutronStartingPointZ-500<<endl;
+                cout<<"vetex point: "<<temp_sig.vtxSignal[0]<<","<<temp_sig.vtxSignal[1]<<","<<temp_sig.vtxSignal[2]<<endl;
+                cout<<"vertex time: "<<temp_sig.vtxTime<<endl;
+                cout<<"---------------------"<<endl;
+            }
+        }
+    }       //end of event iterate
+
+    _file->Close();
+}
 void analyze(string file)
 {
     //cout<<file<<endl;     //cout file name
@@ -175,6 +337,9 @@ void analyze(string file)
     tree->SetBranchAddress("neutronHitX", &t_neutronHitX);
     tree->SetBranchAddress("neutronHitY", &t_neutronHitY);
     tree->SetBranchAddress("neutronHitZ", &t_neutronHitZ);
+    tree->SetBranchAddress("neutronStartingPointX", &t_neutronStartingPointX);
+    tree->SetBranchAddress("neutronStartingPointY", &t_neutronStartingPointY);
+    tree->SetBranchAddress("neutronStartingPointZ", &t_neutronStartingPointZ);
     tree->SetBranchAddress("neutronHitT", &t_neutronHitT);
     tree->SetBranchAddress("neutronParentId", &t_neutronParentId);
     tree->SetBranchAddress("neutronParentPDG", &t_neutronParentPDG);
@@ -281,6 +446,14 @@ void analyze(string file)
                             temp.vtxSignal[1] = t_vtx[1];
                             temp.vtxSignal[2] = t_vtx[2];
 
+                            temp.neutronHitX = t_neutronHitX[n_neutronHit];
+                            temp.neutronHitY = t_neutronHitY[n_neutronHit];
+                            temp.neutronHitZ = t_neutronHitZ[n_neutronHit];
+
+                            temp.neutronStartingPointX = t_neutronStartingPointX[n_neutronHit];
+                            temp.neutronStartingPointY = t_neutronStartingPointY[n_neutronHit];
+                            temp.neutronStartingPointZ = t_neutronStartingPointZ[n_neutronHit];
+
                             temp.neutronParentId = t_neutronParentId[n_neutronHit];
                             temp.neutronParentPdg = t_neutronParentPDG[n_neutronHit];
 
@@ -343,6 +516,16 @@ void analyze(string file)
                 hist_signal->Fill(signal.trackLength,signal.timeWindow);
                 //cout<<"arm :"<<signal.trackLength<<", time: "<<signal.timeWindow<<endl;
                 //cout<<"vertex: "<<signal.vtxSignal[0]<<","<<signal.vtxSignal[1]<<","<<signal.vtxSignal[2]<<endl;
+                        //cout<<"neutron starting point: "<<signal.neutronStartingPointX<<","<<signal.neutronStartingPointY<<","<<signal.neutronStartingPointZ<<endl;
+                        //cout<<"neutron hit point: "<<signal.neutronHitX<<","<<signal.neutronHitY<<","<<signal.neutronHitZ<<endl;
+                        //cout<<"vetex point: "<<signal.vtxSignal[0]<<","<<signal.vtxSignal[1]<<","<<signal.vtxSignal[2]<<endl;
+                        //cout<<"---------------------"<<endl;
+                dist_sig_sp_vtx->Fill(pow(pow(signal.neutronStartingPointX-signal.vtxSignal[0],2)
+                            +pow(signal.neutronStartingPointY-signal.vtxSignal[1],2)
+                            +pow(signal.neutronStartingPointZ-signal.vtxSignal[2],2),0.5));
+                dist_sig_sp_nh->Fill(pow(pow(signal.neutronStartingPointX-signal.neutronHitX,2)
+                            +pow(signal.neutronStartingPointY-signal.neutronHitY,2)
+                            +pow(signal.neutronStartingPointZ-signal.neutronHitZ,2),0.5));
             }
         }
     }       //end of event iterate
@@ -631,6 +814,11 @@ BACKGROUND : Neutron information
                 bkg_1 = bkg_temp_1;
                 //if(bkg_1.timeWindow < signal.timeWindow)
                 //{
+                        cout<<"neutron starting point: "<<bkg_1.neutronStartingPointX<<","<<bkg_1.neutronStartingPointY<<","<<bkg_1.neutronStartingPointZ<<endl;
+                        cout<<"neutron hit point: "<<bkg_1.neutronHitX<<","<<bkg_1.neutronHitY<<","<<bkg_1.neutronHitZ<<endl;
+                        cout<<"parentId :"<<bkg_1.neutronParentId<<endl;
+                        cout<<"vetex point: "<<signal.vtxSignal[0]<<","<<signal.vtxSignal[1]<<","<<signal.vtxSignal[2]<<endl;
+                        cout<<"---------------------"<<endl;
                 dist_sp_vtx->Fill(pow(pow(bkg_1.neutronStartingPointX-signal.vtxSignal[0],2)
                             +pow(bkg_1.neutronStartingPointY-signal.vtxSignal[1],2)
                             +pow(bkg_1.neutronStartingPointZ-signal.vtxSignal[2],2),0.5));
@@ -1028,16 +1216,19 @@ void neutron()
     {
         for(int i = 1; i <1001; i++)
         {
-            cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
+            //cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
             //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d.root",j,i));
             //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d.root",j,i));
-            analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d_test.root",j,i));
-            analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
+    //        test_analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d.root",j,i));
+    //        test_analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d.root",j,i));
+            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d_test.root",j,i));
+            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
             //num_interaction(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
             //num_interaction(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
         }
         cout<<endl;
     }
+            test_analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",101,1));
     cout<<"end"<<endl;
     cout<<"nubmer_of_CC: "<<number_of_CC<<endl;
     cout<<"number_of_file: "<<num_file<<endl;
@@ -1065,6 +1256,8 @@ void neutron()
     first_n_position_XZ->Write();
     dist_sp_vtx->Write();
     dist_sp_nh->Write();
+    dist_sig_sp_vtx->Write();
+    dist_sig_sp_nh->Write();
     fi1->Close();
 
     TCanvas * can = new TCanvas;
