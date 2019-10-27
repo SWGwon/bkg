@@ -259,6 +259,7 @@ void test_test_analyze(string file)
 
             if(earliest_neutron_hit.timeWindow != 100000000)
             {
+                /*
                 cout<<"arm :"<<earliest_neutron_hit.trackLength<<", time: "<<earliest_neutron_hit.timeWindow<<endl;
                 cout<<"neutron hit point: "<<earliest_neutron_hit.neutronHitX<<","<<earliest_neutron_hit.neutronHitY<<","<<earliest_neutron_hit.neutronHitZ<<endl;
                 cout<<"neutron hit time: "<<earliest_neutron_hit.neutronTrueT<<endl;
@@ -267,6 +268,7 @@ void test_test_analyze(string file)
                 cout<<"vetex point: "<<earliest_neutron_hit.vtxSignal[0]<<","<<earliest_neutron_hit.vtxSignal[1]<<","<<earliest_neutron_hit.vtxSignal[2]<<endl;
                 cout<<"vertex time: "<<earliest_neutron_hit.vtxTime<<endl;
                 cout<<"---------------------"<<endl;
+                */
                 if(earliest_neutron_hit.neutronStartingPointX != -1 
                         &&earliest_neutron_hit.neutronStartingPointY != -1
                         &&earliest_neutron_hit.neutronStartingPointZ != -1)
@@ -1380,9 +1382,9 @@ void neutron()
     cout<<"start"<<endl;
     for(int j = beginPROD; j <endPROD+1; j++)
     {
-        for(int i = 1; i <1001; i++)
+        for(int i = 1; i <101; i++)
         {
-            //cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
+            cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
             //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d.root",j,i));
             //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d.root",j,i));
     //        test_analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/FHC_%d.root",j,i));
@@ -1391,10 +1393,10 @@ void neutron()
             //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
             //num_interaction(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
             //num_interaction(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
+            test_test_analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
         }
         cout<<endl;
     }
-            test_test_analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",101,11));
     cout<<"end"<<endl;
     cout<<"nubmer_of_CC: "<<number_of_CC<<endl;
     cout<<"number_of_file: "<<num_file<<endl;
