@@ -1,24 +1,33 @@
-#include "/Users/gwon/analyze.C"
-//#include "/Users/gwon/neutron.hxx"
+#include "/Users/gwon/neutron.hxx"
 
 int main()
 {
-    int numPROD;
-    cout<<"PROD1 to ? :"<<endl;
-    cin>>numPROD;
+    neutron();
+    /*
+    int endPROD, beginPROD;
+    cout<<"PROD begin :"<<endl;
+    cin>>beginPROD;
+    cout<<"PROD end :"<<endl;
+    cin>>endPROD;
     cout<<"start"<<endl;
-    for(int j = 1; j <numPROD+1; j++)
+    for(int j = beginPROD; j <endPROD+1; j++)
     {
         for(int i = 1; i <1001; i++)
         {
             cout<<"\033[1APROD"<<j<<": "<<i<<"\033[1000D"<<endl;
-            analyze(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
-            analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
+            //analyze(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
+            //analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
+            //num_interaction(Form("/Users/gwon/Geo12/PROD%d/FHC_%d.root",j,i));
+            //num_interaction(Form("/Users/gwon/Geo12/PROD%d/RHC_%d.root",j,i));
+            //test_test_analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",j,i));
         }
         cout<<endl;
     }
+    test_test_analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",101,1));
     cout<<"end"<<endl;
     cout<<"nubmer_of_CC: "<<number_of_CC<<endl;
+    cout<<"number_of_file: "<<num_file<<endl;
+    cout<<"number_of_interaction: "<<all_interaction<<endl;
 
 
     TFile * fi1 = new TFile("background.root","RECREATE");
@@ -40,6 +49,16 @@ int main()
     first_n_position_XY->Write();
     first_n_position_YZ->Write();
     first_n_position_XZ->Write();
+    dist_sp_vtx->Write();
+    dist_sp_nh->Write();
+    dist_sig_sp_vtx->Write();
+    dist_sig_sp_nh->Write();
+    dist_sig_sp_vtx1->Write();
+    dist_sig_sp_nh1->Write();
+    dist_sig_sp_vtx2->Write();
+    dist_sig_sp_nh2->Write();
+    dist_sig_sp_vtx3->Write();
+    dist_sig_sp_nh3->Write();
     fi1->Close();
 
     TCanvas * can = new TCanvas;
@@ -85,5 +104,22 @@ int main()
     first_n_position_XZ->Draw("colz");
     can5->SaveAs("neutron_position.pdf");
 
+    TCanvas * can6 = new TCanvas;
+    can6->Divide(2,3);
+    can6->cd(1);
+    dist_sig_sp_vtx1->Draw();
+    can6->cd(2);
+    dist_sig_sp_nh1->Draw();
+    can6->cd(3);
+    dist_sig_sp_vtx2->Draw();
+    can6->cd(4);
+    dist_sig_sp_nh2->Draw();
+    can6->cd(5);
+    dist_sig_sp_vtx3->Draw();
+    can6->cd(6);
+    dist_sig_sp_nh3->Draw();
+    can6->SaveAs("test.pdf");
+
     return 0;
+    */
 }
