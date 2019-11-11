@@ -94,6 +94,8 @@ TH1F * angle_event_accumulated = new TH1F("asd","test; pi",10,0,1);
 TH1F * angle_vtx_signal = new TH1F("a","angle between vtx and neutron signal; pi",10,0,1);
 TH1F * angle_vtx_secondary = new TH1F("b","angle between vtx and secondary neutron; pi",10,0,1);
 
+TH1F * angle_piDeath_neutron_hit = new TH1F("c","angle between pi death point and neutron hit from it; pi",10,0,1);
+
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
@@ -304,8 +306,8 @@ void test_test_analyze(string file)
             float temp_earliest_time = 1000000;
             for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
-                if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
-                //if(t_neutronHitX[n_neutronHit] != 0 && t_neutronStartingPointX[n_neutronHit] == t_piDeath[0] && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
+                //if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
+                if(t_neutronHitX[n_neutronHit] != 0 && t_neutronStartingPointX[n_neutronHit] == t_piDeath[0] && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
                     temp_earliest_time = t_neutronHitT[n_neutronHit];
                     //look for a neutron hit in 3DST
@@ -452,6 +454,17 @@ void test_test_analyze(string file)
                             dist_sig_sp_nh_pion->Fill(pow(pow(earliest_neutron_hit.neutronStartingPointX-earliest_neutron_hit.neutronHitX,2)
                                         +pow(earliest_neutron_hit.neutronStartingPointY-earliest_neutron_hit.neutronHitY,2)
                                         +pow(earliest_neutron_hit.neutronStartingPointZ-earliest_neutron_hit.neutronHitZ,2),0.5));
+                            //vector from pi death point to earliest neutron hit from it
+                            float vec_piDeath_neutron_hit[3];
+                            vec_piDeath_neutron_hit[0] = earliest_neutron_hit.neutronHitX-earliest_neutron_hit.piDeath[0];
+                            vec_piDeath_neutron_hit[1] = earliest_neutron_hit.neutronHitY-earliest_neutron_hit.piDeath[1];
+                            vec_piDeath_neutron_hit[2] = earliest_neutron_hit.neutronHitZ-earliest_neutron_hit.piDeath[2];
+                            //vector from FV vertex to pi death point
+                            float vec_vtx_piDeath[3];
+                            vec_vtx_piDeath[0] = earliest_neutron_hit.piDeath[0]-earliest_neutron_hit.vtxSignal[0];
+                            vec_vtx_piDeath[1] = earliest_neutron_hit.piDeath[1]-earliest_neutron_hit.vtxSignal[1];
+                            vec_vtx_piDeath[2] = earliest_neutron_hit.piDeath[2]-earliest_neutron_hit.vtxSignal[2];
+                            angle_piDeath_neutron_hit->Fill(GetAngle(vec_piDeath_neutron_hit,vec_vtx_piDeath));
                         }
                         if(earliest_neutron_hit.neutronParentPdg == 2112)    //neutron
                         {
@@ -1654,6 +1667,7 @@ void neutron()
     dist_vtx_to_nh_proton->Write();
     angle_vtx_signal->Write();
     angle_vtx_secondary->Write();
+    angle_piDeath_neutron_hit->Write();
     fi1->Close();
 
     TCanvas * can = new TCanvas;
@@ -1779,4 +1793,10 @@ void neutron()
     angle_vtx_secondary->SetStats(false);
     angle_vtx_secondary->Draw();
     can11->SaveAs("angle_vtx_secondary.pdf");
+
+    TCanvas * can12 = new TCanvas;
+    angle_piDeath_neutron_hit->Scale(1/angle_piDeath_neutron_hit->GetEntries(), "nosw2 ");
+    angle_piDeath_neutron_hit->SetStats(false);
+    angle_piDeath_neutron_hit->Draw();
+    can12->SaveAs("angle_piDeath_neutron_hit.pdf");
 }
