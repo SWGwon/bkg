@@ -404,17 +404,13 @@ void test_test_analyze(string file)
                         vec_vtx_to_sig[1] = earliest_neutron_hit.neutronHitY-earliest_neutron_hit.vtxSignal[1];
                         vec_vtx_to_sig[2] = earliest_neutron_hit.neutronHitZ-earliest_neutron_hit.vtxSignal[2];
 
-                        //normalize
-                        norm_vec_vtx_to_sig[0] = vec_vtx_to_sig[0]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
-                        norm_vec_vtx_to_sig[1] = vec_vtx_to_sig[1]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
-                        norm_vec_vtx_to_sig[2] = vec_vtx_to_sig[2]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
-                        //get angle
-                        angle_vtx_signal->Fill(TMath::ACos(norm_vec_vtx_to_sig[0]*0+ norm_vec_vtx_to_sig[1]*0+norm_vec_vtx_to_sig[2]*1)/TMath::Pi());
-                        /*
-                           cout<<"--------------------"<<endl;
-                           cout<<"event: "<<event<<endl;
-                           cout<<"vtx: "<<earliest_neutron_hit.vtxSignal[0]<<","<<earliest_neutron_hit.vtxSignal[1]<<","<<earliest_neutron_hit.vtxSignal[2]<<endl;
-                         */
+                        //z-axis
+                        float b[3];
+                        b[0] = 0;
+                        b[1] = 0;
+                        b[2] = 1;
+
+                        angle_vtx_signal->Fill(GetAngle(vec_vtx_to_sig,b));
                     }
                     if(earliest_neutron_hit.neutronParentId == 0)
                     {
@@ -430,12 +426,14 @@ void test_test_analyze(string file)
                         vec_vtx_to_sig[1] = earliest_neutron_hit.neutronHitY-earliest_neutron_hit.vtxSignal[1];
                         vec_vtx_to_sig[2] = earliest_neutron_hit.neutronHitZ-earliest_neutron_hit.vtxSignal[2];
 
-                        //normalize
-                        norm_vec_vtx_to_sig[0] = vec_vtx_to_sig[0]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
-                        norm_vec_vtx_to_sig[1] = vec_vtx_to_sig[1]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
-                        norm_vec_vtx_to_sig[2] = vec_vtx_to_sig[2]/(pow(pow(vec_vtx_to_sig[0],2)+pow(vec_vtx_to_sig[1],2)+pow(vec_vtx_to_sig[2],2),0.5));
+                        //z-axis
+                        float a[3];
+                        a[0] = 0;
+                        a[1] = 0;
+                        a[2] = 1;
+
                         //get angle
-                        angle_vtx_signal->Fill(TMath::ACos(norm_vec_vtx_to_sig[0]*0+ norm_vec_vtx_to_sig[1]*0+norm_vec_vtx_to_sig[2]*1)/TMath::Pi());
+                        angle_vtx_signal->Fill(GetAngle(vec_vtx_to_sig,a));
                     }
                     if(earliest_neutron_hit.neutronParentId > 0)
                     {
@@ -503,34 +501,13 @@ void test_test_analyze(string file)
                         vec_vtx_to_secondary_neutron[1] = earliest_neutron_hit.neutronHitY-earliest_neutron_hit.vtxSignal[1];
                         vec_vtx_to_secondary_neutron[2] = earliest_neutron_hit.neutronHitZ-earliest_neutron_hit.vtxSignal[2];
 
-                        //normalize
-                        norm_vec_vtx_to_secondary_vertex[0] = vec_vtx_to_secondary_vertex[0]/(pow(pow(vec_vtx_to_secondary_vertex[0],2)+pow(vec_vtx_to_secondary_vertex[1],2)+pow(vec_vtx_to_secondary_vertex[2],2),0.5));
-                        norm_vec_vtx_to_secondary_vertex[1] = vec_vtx_to_secondary_vertex[1]/(pow(pow(vec_vtx_to_secondary_vertex[0],2)+pow(vec_vtx_to_secondary_vertex[1],2)+pow(vec_vtx_to_secondary_vertex[2],2),0.5));
-                        norm_vec_vtx_to_secondary_vertex[2] = vec_vtx_to_secondary_vertex[2]/(pow(pow(vec_vtx_to_secondary_vertex[0],2)+pow(vec_vtx_to_secondary_vertex[1],2)+pow(vec_vtx_to_secondary_vertex[2],2),0.5));
-
-                        norm_vec_secondary_vertex_to_neutron_hit[0] = vec_secondary_vertex_to_neutron_hit[0]/(pow(pow(vec_secondary_vertex_to_neutron_hit[0],2)+pow(vec_secondary_vertex_to_neutron_hit[1],2)+pow(vec_secondary_vertex_to_neutron_hit[2],2),0.5));
-                        norm_vec_secondary_vertex_to_neutron_hit[1] = vec_secondary_vertex_to_neutron_hit[1]/(pow(pow(vec_secondary_vertex_to_neutron_hit[0],2)+pow(vec_secondary_vertex_to_neutron_hit[1],2)+pow(vec_secondary_vertex_to_neutron_hit[2],2),0.5));
-                        norm_vec_secondary_vertex_to_neutron_hit[2] = vec_secondary_vertex_to_neutron_hit[2]/(pow(pow(vec_secondary_vertex_to_neutron_hit[0],2)+pow(vec_secondary_vertex_to_neutron_hit[1],2)+pow(vec_secondary_vertex_to_neutron_hit[2],2),0.5));
-
-                        norm_vec_vtx_to_secondary_neutron[0] = vec_vtx_to_secondary_neutron[0]/(pow(pow(vec_vtx_to_secondary_neutron[0],2)+pow(vec_vtx_to_secondary_neutron[1],2)+pow(vec_vtx_to_secondary_neutron[2],2),0.5));
-                        norm_vec_vtx_to_secondary_neutron[1] = vec_vtx_to_secondary_neutron[1]/(pow(pow(vec_vtx_to_secondary_neutron[0],2)+pow(vec_vtx_to_secondary_neutron[1],2)+pow(vec_vtx_to_secondary_neutron[2],2),0.5));
-                        norm_vec_vtx_to_secondary_neutron[2] = vec_vtx_to_secondary_neutron[2]/(pow(pow(vec_vtx_to_secondary_neutron[0],2)+pow(vec_vtx_to_secondary_neutron[1],2)+pow(vec_vtx_to_secondary_neutron[2],2),0.5));
-
-                        //inner product
-                        /*
-                           cout<<
-                           TMath::ACos(norm_vec_vtx_to_secondary_vertex[0]*norm_vec_secondary_vertex_to_neutron_hit[0]+
-                           norm_vec_vtx_to_secondary_vertex[1]*norm_vec_secondary_vertex_to_neutron_hit[1]+
-                           norm_vec_vtx_to_secondary_vertex[2]*norm_vec_secondary_vertex_to_neutron_hit[2])/TMath::Pi()
-                           <<"pi"<<endl;
-                         */
-                        angle_event->Fill(TMath::ACos(norm_vec_vtx_to_secondary_vertex[0]*norm_vec_secondary_vertex_to_neutron_hit[0]+ norm_vec_vtx_to_secondary_vertex[1]*norm_vec_secondary_vertex_to_neutron_hit[1]+ norm_vec_vtx_to_secondary_vertex[2]*norm_vec_secondary_vertex_to_neutron_hit[2])/TMath::Pi());
-                        angle_vtx_secondary->Fill(TMath::ACos(norm_vec_vtx_to_secondary_neutron[0]*0+ norm_vec_vtx_to_secondary_vertex[1]*0+norm_vec_vtx_to_secondary_vertex[2]*1)/TMath::Pi());
-                        cout<<TMath::ACos(norm_vec_vtx_to_secondary_neutron[0]*0+ norm_vec_vtx_to_secondary_neutron[1]*0+norm_vec_vtx_to_secondary_neutron[2]*1)/TMath::Pi()<<endl;
                         float z[3];
                         z[0] = 0;
                         z[1] = 0;
                         z[2] = 1;
+
+                        angle_event->Fill(GetAngle(vec_vtx_to_secondary_vertex,vec_secondary_vertex_to_neutron_hit));
+                        angle_vtx_secondary->Fill(GetAngle(vec_vtx_to_secondary_neutron,z));
                         cout<<GetAngle(norm_vec_vtx_to_secondary_neutron,z)<<endl;
                         cout<<"-------"<<endl;
                     }
