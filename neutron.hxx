@@ -508,8 +508,6 @@ void test_test_analyze(string file)
 
                         angle_event->Fill(GetAngle(vec_vtx_to_secondary_vertex,vec_secondary_vertex_to_neutron_hit));
                         angle_vtx_secondary->Fill(GetAngle(vec_vtx_to_secondary_neutron,z));
-                        cout<<GetAngle(norm_vec_vtx_to_secondary_neutron,z)<<endl;
-                        cout<<"-------"<<endl;
                     }
                 }
             }
