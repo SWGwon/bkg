@@ -95,7 +95,7 @@ TH1F * angle_vtx_signal = new TH1F("a","angle between vtx and neutron signal; pi
 TH1F * angle_vtx_secondary = new TH1F("b","angle between vtx and secondary neutron; pi",10,0,1);
 
 TH1F * angle_piDeath_neutron_hit = new TH1F("c","angle between pi death point and neutron hit from it; pi",10,0,1);
-TH1F * angle_piDeath_vtx = new TH1F("c","angle between pi death point and neutron hit from it; pi",10,0,1);
+TH1F * angle_piDeath_vtx = new TH1F("d","angle between pi death point and neutron hit from FV vertex; pi",10,0,1);
 
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
@@ -752,9 +752,9 @@ void neutron()
     can->SaveAs("angle_piDeath_neutron_hit.pdf");
     can->Clear();
 
-    angle_piDeath_vtx->Scale(1/angle_piDeath_vtx->GetEntries());
+    angle_piDeath_vtx->Scale(1/angle_piDeath_vtx->GetEntries(),"nosw2");
     angle_piDeath_vtx->SetStats(false);
     angle_piDeath_vtx->Draw();
-    can->SaveAs("angle_piDeath_vtx");
+    can->SaveAs("angle_piDeath_vtx.pdf");
     can->Clear();
 }
