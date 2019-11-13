@@ -743,8 +743,7 @@ void neutron()
     can->SaveAs("bkg_angle_cut.pdf");
     can->Clear();
 
-    TH1F * efficiency = new TH1F;
-    efficiency = signal_angle_cut;
+    TH1F * efficiency = (TH1F*)signal_angle_cut->Clone();
     efficiency->Scale(1/efficiency->GetBinContent(1),"nosw2");
     efficiency->SetStats(0);
     efficiency->SetTitle("efficiency");
