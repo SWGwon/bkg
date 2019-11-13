@@ -737,10 +737,12 @@ void neutron()
     can->SaveAs("angle_piDeath_vtx.pdf");
     can->Clear();
 
+    signal_angle_cut->SetStats(0);
     signal_angle_cut->Draw();
     can->SaveAs("signal_angle_cut.pdf");
     can->Clear();
 
+    bkg_angle_cut->SetStats(0);
     bkg_angle_cut->Draw();
     can->SaveAs("bkg_angle_cut.pdf");
     can->Clear();
