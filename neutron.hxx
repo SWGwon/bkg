@@ -503,10 +503,7 @@ void analyze(string file)
                         angle_vtx_secondary->Fill(GetAngle(vec_vtx_to_secondary_neutron,z));
                     }
                 }
-            }
 
-            if(earliest_neutron_hit.isEmpty == false)
-            {
                 if(earliest_neutron_hit.isFromPion)
                 {
                     if(earliest_neutron_hit.neutronStartingPoint[0] != -1 
