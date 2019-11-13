@@ -237,7 +237,7 @@ double GetDistance(float a[], float b[])
 }
 
 
-void analyze(string file, float angle_cut)
+void analyze(string file)
 {
     auto _file = new TFile(TString(file));
     auto tree = (TTree*)_file->Get("tree");
@@ -301,6 +301,7 @@ void analyze(string file, float angle_cut)
             vec_piDeath_to_neutron_hit[i] = 0;
         }
 
+        int num_pi = 0;
         tree->GetEntry(event);
         //if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50)
         if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && t_vtx[2] < 100 && t_vtx[2] >0)
@@ -320,16 +321,16 @@ void analyze(string file, float angle_cut)
 
             for(int inFS = 0; inFS < t_nFS; inFS++)
             {
-                if(abs(t_fsPdg[inFS]) == 211 || abs(t_fsPdg[inFS]) == 111)    //pionPDG=+-211,111
+                if(abs(t_fsPdg[inFS]) == 211)    //pionPDG=+-211
                 {
                     is_pion = true;
-                    break;
+                    num_pi++;
                 }
             }
 
             if(!is_CC)
                 continue;
-            if(!is_pion)
+            if(!is_pion || num_pi != 1)
                 continue;
 
             float temp_earliest_time = 1000000;
@@ -473,19 +474,18 @@ void analyze(string file, float angle_cut)
                     vec_vtx_to_piDeath[1] = earliest_neutron_hit.piDeath[1]-earliest_neutron_hit.vtxSignal[1];
                     vec_vtx_to_piDeath[2] = earliest_neutron_hit.piDeath[2]-earliest_neutron_hit.vtxSignal[2];
 
-                    signal_no_cut->Fill(angle_cut);
-
-                    if(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath) > angle_cut)
+                    //signal_no_cut->Fill(angle_cut);
+                    for(int i = 0; i < 10; i++)
                     {
-                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                        if(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath) > 0.1*i+0.001)
                         {
-                            signal_angle_cut->Fill(angle_cut);
-                        }
-                        if(earliest_neutron_hit.neutronParentId > 0)
-                        {
-                            bkg_angle_cut->Fill(angle_cut);
+                            if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                                signal_angle_cut->Fill(0.1*i+0.001);
+                            if(earliest_neutron_hit.neutronParentId > 0)
+                                bkg_angle_cut->Fill(0.1*i+0.001);
                         }
                     }
+                
                     //if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                     //{
                     //    hist_signal->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
@@ -558,7 +558,7 @@ void analyze(string file, float angle_cut)
 
                     //    angle_event->Fill(GetAngle(vec_vtx_to_secondary_vertex,vec_secondary_vertex_to_neutron_hit));
                     //    angle_vtx_secondary->Fill(GetAngle(vec_vtx_to_secondary_neutron,z));
-                    }
+                }
                 }
             }
 
@@ -602,17 +602,14 @@ void neutron()
     cout<<"filenum :"<<endl;
     cin>>filenum;
     cout<<"start"<<endl;
-    for(int ii = 0; ii < 12; ii++)
+    for(int j = beginPROD; j <endPROD+1; j++)
     {
-        for(int j = beginPROD; j <endPROD+1; j++)
+        for(int i = 2; i <filenum; i++) //test_1 is not
         {
-            for(int i = 2; i <filenum; i++) //test_1 is not
-            {
-                cout<<"\033[1APROD"<<j<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-                analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",j,i),0.1*ii+0.001);
-            }
-            cout<<endl;
+            cout<<"\033[1APROD"<<j<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
+            analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",j,i));
         }
+        cout<<endl;
     }
     cout<<"end"<<endl;
     cout<<"nubmer_of_CC: "<<number_of_CC<<endl;
