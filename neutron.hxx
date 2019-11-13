@@ -555,10 +555,6 @@ void neutron()
         cout<<endl;
     }
     cout<<"end"<<endl;
-    cout<<"nubmer_of_CC: "<<number_of_CC<<endl;
-    cout<<"number_of_file: "<<num_file<<endl;
-    cout<<"number_of_interaction: "<<all_interaction<<endl;
-
 
     TFile * fi1 = new TFile("background.root","RECREATE");
     hist_signal->Write();
