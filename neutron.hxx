@@ -332,7 +332,7 @@ void analyze(string file)
 
             if(!is_CC)
                 continue;
-            if(!is_pion || num_pi != 1)
+            if(!is_pion || num_pi > 1 || num_pi = 0)
                 continue;
 
             float temp_earliest_time = 1000000;
