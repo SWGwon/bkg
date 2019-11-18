@@ -97,9 +97,9 @@ TH1F * angle_vtx_secondary = new TH1F("b","angle between vtx and secondary neutr
 TH1F * angle_piDeath_neutron_hit = new TH1F("c","angle between pi death point and neutron hit from it; pi",10,0,1);
 TH1F * angle_piDeath_vtx = new TH1F("d","angle between pi death point and neutron hit from FV vertex; pi",10,0,1);
 
-TH1F * signal_angle_cut = new TH1F("sig_angle_cut","number of signal with angle cut; pi",10,0,1);
-TH1F * signal_no_cut = new TH1F("sig_no_cut","number of signal; pi",10,0,1);
-TH1F * bkg_angle_cut = new TH1F("bkg_angle_cut","number of background with angle cut; pi",10,0,1);
+TH1F * signal_angle_cut = new TH1F("sig_angle_cut","number of signal with angle cut; angle cut (pi)",10,0,1);
+TH1F * signal_no_cut = new TH1F("sig_no_cut","number of signal; angle cut (pi)",10,0,1);
+TH1F * bkg_angle_cut = new TH1F("bkg_angle_cut","number of background with angle cut; angle cut (pi)",10,0,1);
 
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
@@ -601,7 +601,6 @@ void neutron()
     signal_angle_cut->Write();
     signal_no_cut->Write();
     bkg_angle_cut->Write();
-    fi1->Close();
 
     TCanvas * can = new TCanvas;
     can->Divide(2,2);
@@ -744,15 +743,25 @@ void neutron()
     efficiency->SetStats(0);
     efficiency->SetTitle("efficiency");
     efficiency->Draw();
+    efficiency->Write();
     can->SaveAs("efficiency.pdf");
     can->Clear();
 
+    TH1F * purity = (TH1F*)signal_angle_cut->Clone();
     bkg_angle_cut->Add(signal_angle_cut);
-    signal_angle_cut->Divide(bkg_angle_cut);
-    signal_angle_cut->SetStats(0);
-    signal_angle_cut->SetTitle("purity");
-    signal_angle_cut->Draw();
+    purity->Divide(bkg_angle_cut);
+    purity->SetStats(0);
+    purity->SetTitle("purity");
+    purity->Draw();
+    purity->Write();
     can->SaveAs("purity.pdf");
     can->Clear();
 
+    purity->Multiply(efficiency);
+    purity->SetTitle("purity*efficiency");
+    purity->Draw();
+    can->SaveAs("purity*efficiency.pdf");
+    can->Clear();
+
+    fi1->Close();
 }
