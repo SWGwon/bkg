@@ -101,6 +101,12 @@ TH1F * signal_angle_cut = new TH1F("sig_angle_cut","number of signal with angle 
 TH1F * signal_no_cut = new TH1F("sig_no_cut","number of signal; angle cut (pi)",10,0,1);
 TH1F * bkg_angle_cut = new TH1F("bkg_angle_cut","number of background with angle cut; angle cut (pi)",10,0,1);
 
+TH1F * signal_distance_cut = new TH1F("sig_distance_cut","number of signal with distance cut; distance cut (cm)",10,0,100);
+TH1F * bkg_distance_cut = new TH1F("bkg_distance_cut","number of background with distance cut; distance cut (cm)",10,0,100);
+
+TH2F * signal_2d_cut = new TH2F("signal_2d_cut", "signal;angle cut(pi);distance cut(cm)",10,0,1,10,0,100);
+TH2F * bkg_2d_cut = new TH2F("bkg_2d_cut", "background;angle cut(pi);distance cut(cm)",10,0,1,10,0,100);
+
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
@@ -135,6 +141,7 @@ class Hit_t
              isThereProton300;      // Is there a proton with KE > 300 MeV in FS particles
         bool isEmpty;
         bool isFromPion;
+        bool isFromProton;
 
         Hit_t()
         {
@@ -162,6 +169,7 @@ class Hit_t
             this->isThereProton300 = 0;
             this->isEmpty = 1;
             this->isFromPion = 0;
+            this->isFromProton = 0;
         }
 };
 
@@ -304,6 +312,7 @@ void analyze(string file)
         }
 
         int num_pi = 0;
+        int num_proton = 0;
         tree->GetEntry(event);
         //if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50)
         if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && t_vtx[2] < 100 && t_vtx[2] >0)
@@ -311,6 +320,7 @@ void analyze(string file)
         {
             bool is_CC = false;
             bool is_pion = false;
+            bool is_proton = false;
 
             for(int inFS = 0; inFS < t_nFS; inFS++)
             {
@@ -330,9 +340,18 @@ void analyze(string file)
                 }
             }
 
+            for(int inFS = 0; inFS < t_nFS; inFS++)
+            {
+                if(abs(t_fsPdg[inFS]) == 2212)    //protonPDG=+-211
+                {
+                    is_proton = true;
+                    num_proton++;
+                }
+            }
+
             if(!is_CC)
                 continue;
-            if(!is_pion || num_pi > 1 || num_pi = 0)
+            if(!is_pion || num_pi != 1 || is_proton)
                 continue;
 
             float temp_earliest_time = 1000000;
@@ -398,6 +417,12 @@ void analyze(string file)
                             earliest_neutron_hit.isEmpty = 0;
                             if(t_neutronStartingPointX[n_neutronHit] == t_piDeath[0])
                                 earliest_neutron_hit.isFromPion = 1;
+                            else
+                                earliest_neutron_hit.isFromPion = 0;
+                            if(t_neutronStartingPointX[n_neutronHit] == t_protonDeath[0])
+                                earliest_neutron_hit.isFromProton = 1;
+                            else
+                                earliest_neutron_hit.isFromProton = 0;
                         }
                     }
                 }
@@ -418,6 +443,20 @@ void analyze(string file)
                     vec_vtx_to_piDeath[1] = earliest_neutron_hit.piDeath[1]-earliest_neutron_hit.vtxSignal[1];
                     vec_vtx_to_piDeath[2] = earliest_neutron_hit.piDeath[2]-earliest_neutron_hit.vtxSignal[2];
 
+                    //distance between pi death, neutron hit
+                    for(int j = 0; j < 10; j++)
+                    {
+                        if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath) > 10*j+0.001)
+                        {
+                            if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                                signal_distance_cut->Fill(10*j+0.001);
+                            if(earliest_neutron_hit.neutronParentId > 0)
+                                if(earliest_neutron_hit.isFromPion)
+                                    bkg_distance_cut->Fill(10*j+0.001);
+                        }
+                    }
+                    
+
                     //signal_no_cut->Fill(angle_cut);
                     for(int i = 0; i < 10; i++)
                     {
@@ -426,9 +465,31 @@ void analyze(string file)
                             if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
                                 signal_angle_cut->Fill(0.1*i+0.001);
                             if(earliest_neutron_hit.neutronParentId > 0)
-                                bkg_angle_cut->Fill(0.1*i+0.001);
+                                if(earliest_neutron_hit.isFromPion)
+                                    bkg_angle_cut->Fill(0.1*i+0.001);
                         }
                     }
+
+                    for(int i = 0; i < 10; i++)
+                    {
+                        if(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath) > 0.1*i+0.001)
+                        {
+                            for(int j = 0; j < 10; j++)
+                            {
+                                if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath) > 10*j+0.001)
+                                {
+                                    if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                                        signal_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
+                                    if(earliest_neutron_hit.neutronParentId > 0)
+                                        if(earliest_neutron_hit.isFromPion)
+                                            bkg_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
+                                }
+                            }
+                        }
+                    }
+
+
+
 
                     if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                     {
@@ -761,6 +822,42 @@ void neutron()
     purity->SetTitle("purity*efficiency");
     purity->Draw();
     can->SaveAs("purity*efficiency.pdf");
+    can->Clear();
+
+    signal_distance_cut->Draw();
+    can->SaveAs("sig_distance_cut.pdf");
+    can->Clear();
+
+    bkg_distance_cut->Draw();
+    can->SaveAs("bkg_distance_cut.pdf");
+    can->Clear();
+
+    signal_2d_cut->Draw("colz");
+    can->SaveAs("signal_2d_cut.pdf");
+    can->Clear();
+
+    bkg_2d_cut->Draw("colz");
+    can->SaveAs("bkg_2d_cut.pdf");
+    can->Clear();
+
+    TH2F * efficiency_2d = (TH2F*)signal_2d_cut->Clone();
+    efficiency_2d->Scale(1/efficiency_2d->GetMaximum(),"nosw2");
+    efficiency_2d->SetStats(0);
+    efficiency_2d->SetTitle("efficiency");
+    efficiency_2d->Draw("colz");
+    efficiency_2d->Write();
+    can->SaveAs("efficiency_2d.pdf");
+    can->Clear();
+
+    TH2F * purity_2d = (TH2F*)signal_2d_cut->Clone();
+    bkg_2d_cut->Add(signal_2d_cut);
+    purity_2d->Divide(bkg_2d_cut);
+    purity_2d->SetStats(0);
+    purity_2d->SetTitle("purity");
+    purity_2d->SetMaximum(1);
+    purity_2d->Draw("colz");
+    purity_2d->Write();
+    can->SaveAs("purity_2d.pdf");
     can->Clear();
 
     fi1->Close();
