@@ -645,6 +645,7 @@ void neutron()
         {
             cout<<"\033[1APROD"<<j<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
             analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",j,i));
+            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
         }
         cout<<endl;
     }
@@ -929,6 +930,15 @@ void neutron()
     hist_signal_nocut->Draw("colz");
     hist_signal_nocut->Write();
     can->SaveAs("purity_nocut.pdf");
+    can->Clear();
+
+    can->Divide(2,1);
+    can->SetCanvasSize(700,300);
+    can->cd(1);
+    purity_linear_cut->Draw("colz");
+    can->cd(2);
+    hist_signal_nocut->Draw("colz");
+    can->SaveAs("2purity.pdf");
     can->Clear();
 
     fi1->Close();
