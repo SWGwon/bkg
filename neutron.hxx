@@ -110,6 +110,9 @@ TH2F * bkg_2d_cut = new TH2F("bkg_2d_cut", "background;angle cut(pi);distance cu
 TH2F * signal_2d_linear_cut = new TH2F("2d_signal_linear_cut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * background_2d_linear_cut = new TH2F("2d_background_linear_cut", "background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
+TH2F * hist_signal_nocut = new TH2F("hist_signal_nocut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_nocut = new TH2F("hist_bkg_1_nocut", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
@@ -359,7 +362,7 @@ void analyze(string file)
                 continue;
             if(num_pi != 1)
                 continue;
-            if(num_proton != 1)
+            if(num_proton != 0)
                 continue;
 
             float temp_earliest_time = 1000000;
@@ -442,6 +445,14 @@ void analyze(string file)
                         &&earliest_neutron_hit.neutronStartingPoint[1] != -1
                         &&earliest_neutron_hit.neutronStartingPoint[2] != -1)
                 {
+                    if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
+                    {
+                        hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                    }
+                    if(earliest_neutron_hit.neutronParentId > 0)
+                    {
+                        hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                    }
                     ////piDeath point to neutron hit
                     vec_piDeath_to_neutron_hit[0] = earliest_neutron_hit.neutronHit[0]-earliest_neutron_hit.piDeath[0];
                     vec_piDeath_to_neutron_hit[1] = earliest_neutron_hit.neutronHit[1]-earliest_neutron_hit.piDeath[1];
@@ -465,7 +476,7 @@ void analyze(string file)
                     }
                     
                     //linear cut
-                    if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath)+100*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_sig_neutron_hit)-80 < 0)
+                    if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath)+100*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_sig_neutron_hit)-100 > 0)
                     {
                         if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
                         {
@@ -903,11 +914,21 @@ void neutron()
     background_2d_linear_cut->Add(signal_2d_linear_cut);
     purity_linear_cut->Divide(background_2d_linear_cut);
     purity_linear_cut->SetStats(0);
-    purity_linear_cut->SetTitle("purity");
+    purity_linear_cut->SetTitle("purity with cut");
     purity_linear_cut->SetMaximum(1);
     purity_linear_cut->Draw("colz");
     purity_linear_cut->Write();
     can->SaveAs("purity_linear_cut.pdf");
+    can->Clear();
+
+    hist_bkg_1_nocut->Add(hist_signal_nocut);
+    hist_signal_nocut->Divide(hist_bkg_1_nocut);
+    hist_signal_nocut->SetStats(0);
+    hist_signal_nocut->SetTitle("purity (nocut)");
+    hist_signal_nocut->SetMaximum(1);
+    hist_signal_nocut->Draw("colz");
+    hist_signal_nocut->Write();
+    can->SaveAs("purity_nocut.pdf");
     can->Clear();
 
     fi1->Close();
@@ -967,4 +988,6 @@ void neutron()
     delete bkg_2d_cut; 
     delete signal_2d_linear_cut;
     delete background_2d_linear_cut;
+    delete hist_signal_nocut;
+    delete hist_bkg_1_nocut;
 }
