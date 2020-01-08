@@ -39,6 +39,8 @@
 #include <TMath.h>
 #include "TSpline.h"
 
+#define TO_STRING(a) #a
+
 using namespace std;
 //histograms{
 TH2F * hist_signal = new TH2F("hist_signal", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
@@ -71,10 +73,22 @@ TH2F * background_2d_linear_cut = new TH2F("2d_background_linear_cut", "backgrou
 TH2F * hist_signal_nocut = new TH2F("hist_signal_nocut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_1_nocut = new TH2F("hist_bkg_1_nocut", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
+TH2F * signal_ang_vs_dis = new TH2F("signal_ang_vs_dis", "signal;angle(pi);distance(cm)",10,0,1,10,0,100);
+TH2F * bkg_ang_vs_dis = new TH2F("bkg_ang_vs_dis", "background;angle(pi);distance(cm)",10,0,1,10,0,100);
+TH2F * signal_ang_vs_dis_linear_cut = new TH2F("signal_ang_vs_dis_linear_cut", "signal;angle(pi);distance(cm)",10,0,1,10,0,100);
+TH2F * bkg_ang_vs_dis_linear_cut = new TH2F("bkg_ang_vs_dis_linear_cut", "background;angle(pi);distance(cm)",10,0,1,10,0,100);
+
+TH2F * total_number_of_event_d_vs_a = new TH2F("total_number_of_event_d_vs_a", "total number of event;angle cut(pi);distance cut(cm)",10,0,1,10,0,100);
+TH2F * total_number_of_event_L_vs_A = new TH2F("total_number_of_event_L_vs_A", "total number of event;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
 int number_of_CC = 0;
+int number_of_secondary_pion = 0;
+int number_of_secondary_proton = 0;
+int number_of_secondary_neutron = 0;
+int number_of_secondary_other = 0;
 
 class Hit_t 
 {
@@ -151,6 +165,16 @@ double kineticEnergy(float arm, float time)
 
     return KE_MeV;
 }
+
+template <class T>
+T save(T x,TCanvas* can)
+{
+    x->Draw("colz");
+    x->Write();
+    can->SaveAs(Form("%s.pdf",TO_STRING(x)));
+    can->Clear();
+}
+
 
 float energyHitCut = 0.5; //energy deposit threshold for cube
 
@@ -320,9 +344,9 @@ void analyze(string file)
 
             if(!is_CC)
                 continue;
-            if(num_pi != 0)
+            if(num_pi != 1)
                 continue;
-            if(num_proton != 1)
+            if(num_proton != 0)
                 continue;
 
             float temp_earliest_time = 1000000;
@@ -339,7 +363,7 @@ void analyze(string file)
                     if(abs(t_neutronHitX[n_neutronHit]) < 120 && 
                             abs(t_neutronHitY[n_neutronHit]) < 120 && 
                             t_neutronHitZ[n_neutronHit] < 150 &&
-                            t_neutronHitZ[n_neutronHit] > 50)
+                            t_neutronHitZ[n_neutronHit] > -50)
                     {
                         //calculate lever arm
                         float trackLength = pow(
@@ -401,6 +425,18 @@ void analyze(string file)
 
             if(earliest_neutron_hit.isEmpty == false)
             {
+                total_number_of_event_L_vs_A->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                if(earliest_neutron_hit.neutronParentId > 0)
+                {
+                    if(abs(earliest_neutron_hit.neutronParentPdg) == 211)
+                        number_of_secondary_pion += 1;
+                    else if(earliest_neutron_hit.neutronParentPdg == 2212)
+                        number_of_secondary_proton += 1;
+                    else if(earliest_neutron_hit.neutronParentPdg == 2112)
+                        number_of_secondary_neutron += 1;
+                    else
+                        number_of_secondary_other += 1;
+                }
                 if(earliest_neutron_hit.neutronStartingPoint[0] != -1 
                         &&earliest_neutron_hit.neutronStartingPoint[1] != -1
                         &&earliest_neutron_hit.neutronStartingPoint[2] != -1)
@@ -430,47 +466,61 @@ void analyze(string file)
                     vec_vtx_to_protonDeath[1] = earliest_neutron_hit.protonDeath[1]-earliest_neutron_hit.vtxSignal[1];
                     vec_vtx_to_protonDeath[2] = earliest_neutron_hit.protonDeath[2]-earliest_neutron_hit.vtxSignal[2];
 
-                    //pi case
-                    //distance, angle cut 2D plot
-                    ///if(abs(earliest_neutron_hit.piDeath[0]) < 120 && abs(earliest_neutron_hit.piDeath[1]) < 120 && abs(earliest_neutron_hit.piDeath[2]) < 100)
-                    ///{
-                    ///    for(int i = 0; i < 10; i++)
-                    ///    {
-                    ///        if(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath) > 0.1*i+0.001)
-                    ///        {
-                    ///            for(int j = 0; j < 10; j++)
-                    ///            {
-                    ///                if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath) > 10*j+0.001)
-                    ///                {
-                    ///                    if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
-                    ///                        signal_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
-                    ///                    if(earliest_neutron_hit.neutronParentId > 0)
-                    ///                        if(earliest_neutron_hit.isFromPion)
-                    ///                            bkg_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
-                    ///                }
-                    ///            }
-                    ///        }
-                    ///    }
-                    ///}
-                    ///
-                    /////linear cut
-                    ///if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath)+100*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-100 > 0)
-                    ///{
-                    ///    if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
-                    ///    {
-                    ///        signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                    ///    }
-                    ///    if(earliest_neutron_hit.neutronParentId > 0)
-                    ///    {
-                    ///        background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                    ///    }
-
-                    ///}
+                    ////pi case
+                    ////distance, angle cut 2D plot
+                    if(abs(earliest_neutron_hit.piDeath[0]) < 120 && abs(earliest_neutron_hit.piDeath[1]) < 120 && earliest_neutron_hit.piDeath[2] < 150 && earliest_neutron_hit.piDeath[2] > -50)
+                    {
+                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                            signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath));
+                        if(earliest_neutron_hit.neutronParentId > 0)
+                            if(earliest_neutron_hit.isFromPion)
+                                bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath));
+                        for(int i = 0; i < 10; i++)
+                        {
+                            if(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath) > 0.1*i+0.001)
+                            {
+                                for(int j = 0; j < 10; j++)
+                                {
+                                    if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath) > 10*j+0.001)
+                                    {
+                                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                                            signal_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
+                                        if(earliest_neutron_hit.neutronParentId > 0)
+                                            if(earliest_neutron_hit.isFromPion)
+                                                bkg_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
+                                    }
+                                }
+                            }
+                        }
+                        //linear cut
+                        if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath)+100*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-100 > 0)
+                        {
+                            if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                            {
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath));
+                            }
+                            if(earliest_neutron_hit.neutronParentId > 0)
+                            {
+                                if(earliest_neutron_hit.isFromPion)
+                                {
+                                    background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.piDeath));
+                                }
+                            }
+                        }
+                    }
 
                     //proton case
                     //distance, angle cut 2D plot
-                    if(abs(earliest_neutron_hit.protonDeath[0]) < 120 && abs(earliest_neutron_hit.protonDeath[1]) < 120 && abs(earliest_neutron_hit.protonDeath[2]) < 140)
+                    /*
+                    if(abs(earliest_neutron_hit.protonDeath[0]) < 120 && abs(earliest_neutron_hit.protonDeath[1]) < 120 && earliest_neutron_hit.protonDeath[2] < 150 && earliest_neutron_hit.protonDeath[2] > -50)
                     {
+                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                            signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath));
+                        if(earliest_neutron_hit.neutronParentId > 0)
+                            if(earliest_neutron_hit.isFromProton)
+                                bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath));
                         for(int i = 0; i < 10; i++)
                         {
                             if(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath) > 0.1*i+0.001)
@@ -479,6 +529,7 @@ void analyze(string file)
                                 {
                                     if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath) > 10*j+0.001)
                                     {
+                                        total_number_of_event_d_vs_a->Fill(0.1*i+0.001,10*j+0.001);
                                         if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
                                             signal_2d_cut->Fill(0.1*i+0.001,10*j+0.001);
                                         if(earliest_neutron_hit.neutronParentId > 0)
@@ -488,21 +539,25 @@ void analyze(string file)
                                 }
                             }
                         }
-                    }
-                    
-                    //linear cut
-                    if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath)+100*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-140 > 0)
-                    {
-                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                        //linear cut
+                        if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath)+100*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-60 > 0)
                         {
-                            signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                            if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
+                            {
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath));
+                            }
+                            if(earliest_neutron_hit.neutronParentId > 0)
+                            {
+                                if(earliest_neutron_hit.isFromProton)
+                                {
+                                    background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.protonDeath));
+                                }
+                            }
                         }
-                        if(earliest_neutron_hit.neutronParentId > 0)
-                        {
-                            background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                        }
-
                     }
+                    */
                 }
             }
         }
@@ -548,8 +603,6 @@ void neutron()
     KE_secondary->Write();
     neutronParentPDG->Write();
     neutronParentPDG_case4->Write();
-    background_2d_linear_cut->Write();
-    signal_2d_linear_cut->Write();
     signal_no_cut->Write();
 
     TCanvas * can = new TCanvas;
@@ -575,6 +628,48 @@ void neutron()
     can->SaveAs("bkg_2d_cut.pdf");
     can->Clear();
 
+    signal_ang_vs_dis_linear_cut->Draw("colz");
+    signal_ang_vs_dis_linear_cut->Write();
+    cout<<"signal_ang_vs_dis: "<<signal_ang_vs_dis_linear_cut->GetEntries()<<endl;
+    can->SaveAs("signal_ang_vs_dis.pdf");
+    can->Clear();
+
+    bkg_ang_vs_dis_linear_cut->Draw("colz");
+    bkg_ang_vs_dis_linear_cut->Write();
+    cout<<"bkg_ang_vs_dis: "<<bkg_ang_vs_dis_linear_cut->GetEntries()<<endl;
+    can->SaveAs("bkg_ang_vs_dis.pdf");
+    can->Clear();
+
+    signal_ang_vs_dis->Draw("colz");
+    signal_ang_vs_dis->Write();
+    can->SaveAs("signal_a_vs_d_nocut.pdf");
+    can->Clear();
+
+    bkg_ang_vs_dis->Draw("colz");
+    bkg_ang_vs_dis->Write();
+    can->SaveAs("bkg_a_vs_d_nocut.pdf");
+    can->Clear();
+
+    TH2F * purity_distribution_ang_vs_dis_linear_cut = (TH2F*)signal_ang_vs_dis_linear_cut->Clone();
+    bkg_ang_vs_dis_linear_cut->Add(signal_ang_vs_dis_linear_cut);
+    purity_distribution_ang_vs_dis_linear_cut->SetStats(0);
+    purity_distribution_ang_vs_dis_linear_cut->SetMinimum(0);
+    purity_distribution_ang_vs_dis_linear_cut->Divide(bkg_ang_vs_dis_linear_cut);
+    purity_distribution_ang_vs_dis_linear_cut->Draw("colz");
+    purity_distribution_ang_vs_dis_linear_cut->SetTitle("purity");
+    can->SaveAs("purity_distribution_ang_vs_dis_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_distribution_ang_vs_dis = (TH2F*)signal_ang_vs_dis->Clone();
+    bkg_ang_vs_dis->Add(signal_ang_vs_dis);
+    purity_distribution_ang_vs_dis->SetStats(0);
+    purity_distribution_ang_vs_dis->SetMinimum(0);
+    purity_distribution_ang_vs_dis->Divide(bkg_ang_vs_dis);
+    purity_distribution_ang_vs_dis->Draw("colz");
+    purity_distribution_ang_vs_dis->SetTitle("purity");
+    can->SaveAs("purity_distribution_ang_vs_dis.pdf");
+    can->Clear();
+
     TH2F * efficiency_2d = (TH2F*)signal_2d_cut->Clone();
     efficiency_2d->Scale(1/efficiency_2d->GetMaximum(),"nosw2");
     efficiency_2d->SetStats(0);
@@ -590,7 +685,7 @@ void neutron()
     purity_2d->SetStats(0);
     purity_2d->SetTitle("purity");
     purity_2d->SetMaximum(1);
-    purity_2d->SetMinimum(0);
+    purity_2d->SetMinimum(0.8);
     purity_2d->Draw("colz");
     purity_2d->Write();
     can->SaveAs("purity_2d.pdf");
@@ -606,11 +701,27 @@ void neutron()
     can->Clear();
 
     signal_2d_linear_cut->Draw("colz");
+    signal_2d_linear_cut->Write();
+    cout<<"signal_2d_linear_cut: "<<signal_2d_linear_cut->GetEntries()<<endl;
     can->SaveAs("signal_2d_linear_cut.pdf");
     can->Clear();
 
     background_2d_linear_cut->Draw("colz");
+    background_2d_linear_cut->Write();
+    cout<<"background_2d_linear_cut: "<<background_2d_linear_cut->GetEntries()<<endl;
     can->SaveAs("background_2d_linear_cut.pdf");
+    can->Clear();
+
+    total_number_of_event_d_vs_a->SetStats(0);
+    total_number_of_event_d_vs_a->Draw("colz");
+    total_number_of_event_d_vs_a->Write();
+    can->SaveAs("total_number_of_event_d_vs_a.pdf");
+    can->Clear();
+
+    total_number_of_event_L_vs_A->SetStats(0);
+    total_number_of_event_L_vs_A->Draw("colz");
+    total_number_of_event_L_vs_A->Write();
+    can->SaveAs("total_number_of_event_L_vs_A.pdf");
     can->Clear();
 
     TH2F * purity_linear_cut = (TH2F*)signal_2d_linear_cut->Clone();
@@ -643,6 +754,12 @@ void neutron()
     can->SaveAs("2purity.pdf");
     can->Clear();
 
+
+    cout<<"number of secondary neutron comes from neutron :"<<number_of_secondary_neutron<<endl;
+    cout<<"number of secondary neutron comes from pion :"<<number_of_secondary_pion<<endl;
+    cout<<"number of secondary neutron comes from proton :"<<number_of_secondary_proton<<endl;
+    cout<<"number of secondary neutron comes from other :"<<number_of_secondary_other<<endl;
+
     fi1->Close();
     delete fi1;
     delete can;
@@ -668,4 +785,10 @@ void neutron()
     delete background_2d_linear_cut;
     delete hist_signal_nocut;
     delete hist_bkg_1_nocut;
+    delete total_number_of_event_L_vs_A;
+    delete total_number_of_event_d_vs_a;
+    delete signal_ang_vs_dis;
+    delete bkg_ang_vs_dis;
+    delete signal_ang_vs_dis_linear_cut;
+    delete bkg_ang_vs_dis_linear_cut;
 }
