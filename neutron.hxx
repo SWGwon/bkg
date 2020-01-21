@@ -39,8 +39,9 @@
 #include <TMath.h>
 #include "TSpline.h"
 #include "TSystem.h"
+#include <TError.h>
 
-#define TO_STRING(a) #a
+
 
 using namespace std;
 //histograms{
@@ -88,10 +89,12 @@ int number_of_secondary_proton = 0;
 int number_of_secondary_neutron = 0;
 int number_of_secondary_other = 0;
 
-int cut_slope = 1000;
-int cut_y_intercept = 120;
-int num_fspi = 1;
-int num_fsp = 0;
+//change this part to do slope, intercept test
+int cut_slope = 0;
+int cut_y_intercept = 500;
+//channel type
+int num_fspi = 0;   //number of fs charged pion
+int num_fsp = 1;    //number of fs proton
 
 class Hit_t 
 {
@@ -457,108 +460,82 @@ void analyze(string file)
                     }
 
                     ////pi case
-                    ////distance, angle cut 2D plot
-                    distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.piDeath));
-                    //signal
-                    if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
+                    if(num_fspi == 1 && num_fsp ==0)
                     {
-                        hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                        signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
-                        //linear cut
-                        if(earliest_neutron_hit.trackLength+cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
-                        //if(earliest_neutron_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.70)
+                        ////distance, angle cut 2D plot
+                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.piDeath));
+                        //signal
+                        if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                         {
-                            signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                            signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
-                        }
-                    }
-                    //background
-                    if(earliest_neutron_hit.neutronParentId > 0)
-                    {
-                        if(abs(earliest_neutron_hit.piDeath[0]) < 120 && abs(earliest_neutron_hit.piDeath[1]) < 120 && earliest_neutron_hit.piDeath[2] < 150 && earliest_neutron_hit.piDeath[2] > -50)
-                        {
-                            if(earliest_neutron_hit.isFromPion)
-                            {
-                                hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                                bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
-                                //linear cut
-                                if(earliest_neutron_hit.trackLength+cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
+                            hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                            signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
+                            //linear cut
+                            if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
                                 //if(earliest_neutron_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.70)
+                            {
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
+                            }
+                        }
+                        //background
+                        if(earliest_neutron_hit.neutronParentId > 0)
+                        {
+                            if(abs(earliest_neutron_hit.piDeath[0]) < 120 && abs(earliest_neutron_hit.piDeath[1]) < 120 && earliest_neutron_hit.piDeath[2] < 150 && earliest_neutron_hit.piDeath[2] > -50)
+                            {
+                                if(earliest_neutron_hit.isFromPion)
                                 {
-                                    background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                                    bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
+                                    hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
+                                    //linear cut
+                                    if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
+                                        //if(earliest_neutron_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.70)
+                                    {
+                                        background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
+                                    }
                                 }
                             }
                         }
                     }
 
                     ////proton case
-                    ////distance, angle cut 2D plot
-                    /*
-                    distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.protonDeath));
-                    //signal
-                    if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
+                    if(num_fspi == 0 && num_fsp ==1)
                     {
-                        hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                        signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
-                        //linear cut
-                        if(-earliest_neutron_hit.trackLength+cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
-                        //if(earliest_neutron_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.90)
+                        ////distance, angle cut 2D plot
+                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.protonDeath));
+                        //signal
+                        if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                         {
-                            signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                            signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
-                        }
-                    }
-                    //background
-                    if(earliest_neutron_hit.neutronParentId > 0)
-                    {
-                        if(abs(earliest_neutron_hit.protonDeath[0]) < 120 && abs(earliest_neutron_hit.protonDeath[1]) < 120 && earliest_neutron_hit.protonDeath[2] < 150 && earliest_neutron_hit.protonDeath[2] > -50)
-                        {
-                            if(earliest_neutron_hit.isFromProton)
-                            {
-                                hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                                bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
-                                //linear cut
-                                if(-earliest_neutron_hit.trackLength+cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
+                            hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                            signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
+                            //linear cut
+                            if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-cut_y_intercept < 0)
                                 //if(earliest_neutron_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.90)
+                            {
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
+                            }
+                        }
+                        //background
+                        if(earliest_neutron_hit.neutronParentId > 0)
+                        {
+                            if(abs(earliest_neutron_hit.protonDeath[0]) < 120 && abs(earliest_neutron_hit.protonDeath[1]) < 120 && earliest_neutron_hit.protonDeath[2] < 150 && earliest_neutron_hit.protonDeath[2] > -50)
+                            {
+                                if(earliest_neutron_hit.isFromProton)
                                 {
-                                    background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                                    bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
+                                    hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
+                                    //linear cut
+                                    if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-cut_y_intercept < 0)
+                                        //if(earliest_neutron_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.90)
+                                    {
+                                        background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
+                                    }
                                 }
                             }
                         }
                     }
-                    */
-
-                    //proton case
-                    //distance, angle cut 2D plot
-                    /*
-                   if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
-                       signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.vtxSignal));
-                   if(earliest_neutron_hit.neutronParentId > 0)
-                   {
-                       if(earliest_neutron_hit.isFromProton)
-                           bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.vtxSignal));
-                   }
-
-                    //linear cut
-                    if(GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.vtxSignal)+100*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-60 > 0)
-                    {
-                        if(earliest_neutron_hit.neutronParentId == -1 || earliest_neutron_hit.neutronParentId == 0)
-                        {
-                            signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                            signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.vtxSignal));
-                        }
-                        if(earliest_neutron_hit.neutronParentId > 0)
-                        {
-                            if(earliest_neutron_hit.isFromProton)
-                            {
-                                background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
-                                bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),GetDistance(earliest_neutron_hit.neutronHit,earliest_neutron_hit.vtxSignal));
-                            }
-                        }
-                    }
-                    */
                 }
             }
         }
@@ -589,6 +566,7 @@ void neutron()
     }
     cout<<"end"<<endl;
 
+    gErrorIgnoreLevel = kWarning;
     TString folder_name = TString::Format("cc%dpi%dp_slope_%d_yintercept_%d",num_fspi,num_fsp,cut_slope,cut_y_intercept);
     gSystem->mkdir(folder_name);
     gSystem->cd(folder_name);
