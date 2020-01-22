@@ -1,6 +1,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <thread>
 
 #include "Riostream.h"
 #include <string>
@@ -90,8 +91,8 @@ int number_of_secondary_neutron = 0;
 int number_of_secondary_other = 0;
 
 //change this part to do slope, intercept test
-int cut_slope = 0;
-int cut_y_intercept = 500;
+int cut_slope = -200/1;
+int cut_y_intercept = 200;
 //channel type
 int num_fspi = 0;   //number of fs charged pion
 int num_fsp = 1;    //number of fs proton
@@ -314,7 +315,7 @@ void analyze(string file)
         int num_proton = 0;
         tree->GetEntry(event);
         //if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50)
-        if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && t_vtx[2] < 100 && t_vtx[2] >0)
+        if(abs(t_vtx[0]) < 100 && abs(t_vtx[1]) < 100 && t_vtx[2] < 140 && t_vtx[2] > -40)
             //if(1)
         {
             bool is_CC = false;
@@ -358,7 +359,7 @@ void analyze(string file)
 
             float temp_earliest_time = 1000000;
             float temp_earliest_time_for_pi = 1000000;
-            for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
+            for(int n_neutronHit = 0; n_neutronHit < 500; n_neutronHit++)
             {
                 if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
@@ -547,27 +548,33 @@ void analyze(string file)
 void neutron()
 {
     int endPROD, beginPROD, filenum;
-    cout<<"PROD begin :"<<endl;
-    cin>>beginPROD;
-    cout<<"PROD end :"<<endl;
-    cin>>endPROD;
-    cout<<"filenum :"<<endl;
-    cin>>filenum;
+    
+    //cout<<"filenum :"<<endl;
+    //cin>>filenum;
+    filenum = 1000;
     cout<<"start"<<endl;
-    for(int j = beginPROD; j <endPROD+1; j++)
+    for(int i = 2; i <filenum; i++) //test_1 is not
     {
-        for(int i = 2; i <filenum; i++) //test_1 is not
-        {
-            cout<<"\033[1APROD"<<j<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-            analyze(Form("/Users/gwon/Geo12/PROD%d/RHC_%d_test.root",j,i));
-            //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
-        }
-        cout<<endl;
+        cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
+        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_test.root",i));
+        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
     }
+
+    cout<<endl;
     cout<<"end"<<endl;
 
     gErrorIgnoreLevel = kWarning;
     TString folder_name = TString::Format("cc%dpi%dp_slope_%d_yintercept_%d",num_fspi,num_fsp,cut_slope,cut_y_intercept);
+    if(num_fspi == 1)
+    {
+        gSystem->mkdir("pion");
+        gSystem->cd("pion");
+    }
+    if(num_fsp == 1)
+    {
+        gSystem->mkdir("proton");
+        gSystem->cd("proton");
+    }
     gSystem->mkdir(folder_name);
     gSystem->cd(folder_name);
 
