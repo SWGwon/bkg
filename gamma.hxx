@@ -46,32 +46,32 @@
 
 using namespace std;
 //histograms{
-TH2F * hist_signal = new TH2F("hist_signal", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "out3DST background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "NC background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1 = new TH2F("hist_bkg_1", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_gamma = new TH2F("hist_bkg_1_proton", "gamma background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
-TH3F * hist_neutron_hit = new TH3F("asdf","asdf",240,-120,120,240,-120,120,200,-100,100);
+//lever arm vs time 
+TH2F * hist_sig_arm_vs_time = new TH2F("hist_sig_arm_vs_time", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_arm_vs_time = new TH2F("hist_bkg_1_arm_vs_time", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_gamma_arm_vs_time = new TH2F("hist_bkg_gamma_arm_vs_time", "gamma background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_gamma_arm_vs_time = new TH2F("hist_bkg_1_gamma_arm_vs_time", "secondary+gamma background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
-TH1F * neutronParentPDG = new TH1F("PDG","PDG",3500,-500,3000);
-TH1F * neutronParentPDG_case4 = new TH1F("PDG_case4","PDG_case4",6,0,6);
+//lever arm vs time with cut
+TH2F * hist_sig_arm_vs_time_linear_cut = new TH2F("hist_sig_arm_vs_time_linear_cut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_arm_vs_time_linear_cut = new TH2F("hist_bkg_1_arm_vs_time_linear_cut", "secondary background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_gamma_arm_vs_time_linear_cut = new TH2F("hist_bkg_gamma_arm_vs_time_linear_cut", "gamma background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
+TH2F * hist_bkg_1_gamma_arm_vs_time_linear_cut = new TH2F("hist_bkg_1_gamma_arm_vs_time_linear_cut", "secondary+gamma background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
-TH1D * KE_secondary = new TH1D("seconday","seconday",100,0,200);
-TH1D * KE_primary = new TH1D("primary","primary",100,0,200);
+//angla vs lever arm 
+TH2F * hist_sig_ang_vs_dis = new TH2F("hist_sig_ang_vs_dis", "signal;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_1_ang_vs_dis = new TH2F("hist_bkg_1_ang_vs_dis", "secondary background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_gamma_ang_vs_dis = new TH2F("hist_bkg_gamma_ang_vs_dis", "gamma background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_1_gamma_ang_vs_dis = new TH2F("hist_bkg_1_gamma_ang_vs_dis", "secondary+gamma background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
 
-TH1F * signal_no_cut = new TH1F("sig_no_cut","number of signal; angle cut (pi)",10,0,1);
-
-TH2F * signal_2d_linear_cut = new TH2F("2d_signal_linear_cut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * background_2d_linear_cut = new TH2F("2d_background_linear_cut", "background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-
-TH2F * hist_signal_nocut = new TH2F("hist_signal_nocut", "signal;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-TH2F * hist_bkg_1_nocut = new TH2F("hist_bkg_1_nocut", "secondary background+gamma;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
-
-TH2F * signal_ang_vs_dis = new TH2F("signal_ang_vs_dis", "signal;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
-TH2F * bkg_ang_vs_dis = new TH2F("bkg_ang_vs_dis", "background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
-TH2F * signal_ang_vs_dis_linear_cut = new TH2F("signal_ang_vs_dis_linear_cut", "signal;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
-TH2F * bkg_ang_vs_dis_linear_cut = new TH2F("bkg_ang_vs_dis_linear_cut", "background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+//angle vs lever arm with cut
+TH2F * hist_sig_ang_vs_dis_linear_cut = new TH2F("hist_sig_ang_vs_dis_linear_cut", "signal;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_gamma_ang_vs_dis_linear_cut = new TH2F("hist_bkg_gamma_ang_vs_dis_linear_cut", "gamma background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_1_ang_vs_dis_linear_cut = new TH2F("hist_bkg_1_ang_vs_dis_linear_cut", "secondagry background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
+TH2F * hist_bkg_1_gamma_ang_vs_dis_linear_cut = new TH2F("hist_bkg_1_gamma_ang_vs_dis_linear_cut", "secondary+gamma background;angle(pi);Lever arm(cm)",10,0,1,10,0,200);
 
 TH1F * distance_vtx_to_deathpoint = new TH1F("distance_vtx_to_deathpoint","distance;distance",20,0,200);
 
@@ -551,28 +551,34 @@ void analyze(string file)
                         //signal
                         if(earliest_hit.isNeutron && (earliest_hit.parentId == -1 ||earliest_hit.parentId == 0))
                         {
-                            hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                            hist_sig_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                            hist_sig_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                             //linear cut
                             if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
                                 //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
                             {
-                                signal_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                             }
                         }
 
                         //background
                         if(!earliest_hit.isNeutron)
                         {
-                            hist_bkg_gamma->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            hist_bkg_1_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                            hist_bkg_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                            hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                            hist_bkg_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                            hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+
                             if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
                                 //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
                             {
-                                background_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                             }
                         }
                         if(earliest_hit.parentId > 0)
@@ -581,14 +587,21 @@ void analyze(string file)
                             {
                                 if(earliest_hit.isFromPion && earliest_hit.isNeutron)
                                 {
-                                    hist_bkg_1_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                    bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                    hist_bkg_1_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+
                                     //linear cut
                                     if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
                                         //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
                                     {
-                                        background_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                        hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                        hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                        hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                        hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     }
                                 }
                             }
@@ -603,20 +616,33 @@ void analyze(string file)
                         //signal
                         if(earliest_hit.isNeutron && (earliest_hit.parentId == -1 ||earliest_hit.parentId == 0))
                         {
-                            hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                            hist_sig_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                            hist_sig_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                             //linear cut
                             if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
                                 //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.90)
                             {
-                                signal_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                             }
                         }
                         //background
                         if(!earliest_hit.isNeutron)
                         {
-                            hist_bkg_gamma->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                            hist_bkg_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                            hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                            hist_bkg_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                            hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+
+                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
+                            {
+                                hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                            }
                         }
                         if(earliest_hit.parentId > 0)
                         {
@@ -624,14 +650,21 @@ void analyze(string file)
                             {
                                 if(earliest_hit.isFromProton && earliest_hit.isNeutron)
                                 {
-                                    hist_bkg_1_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                    bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                    hist_bkg_1_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+
                                     //linear cut
                                     if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
-                                        //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.90)
+                                        //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit) > 0.90)
                                     {
-                                        background_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                        hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                        hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                        hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                        hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     }
                                 }
                             }
@@ -678,8 +711,8 @@ void gamma()
     gSystem->mkdir(folder_name);
     gSystem->cd(folder_name);
 
-    double efficiency = signal_ang_vs_dis_linear_cut->GetEntries()/signal_ang_vs_dis->GetEntries();
-    double purity = signal_ang_vs_dis_linear_cut->GetEntries()/(signal_ang_vs_dis_linear_cut->GetEntries()+bkg_ang_vs_dis_linear_cut->GetEntries());
+    double efficiency = hist_sig_ang_vs_dis_linear_cut->GetEntries()/hist_sig_ang_vs_dis->GetEntries();
+    double purity = hist_sig_ang_vs_dis_linear_cut->GetEntries()/(hist_sig_ang_vs_dis_linear_cut->GetEntries()+hist_bkg_1_gamma_ang_vs_dis_linear_cut->GetEntries());
     cout<<"purity: "<<purity<<endl;
 
 
@@ -691,149 +724,273 @@ void gamma()
     c.Close();
 
     TFile * fi1 = new TFile("background.root","RECREATE");
-    hist_signal->Write();
-    hist_bkg_out3DST->Write();
-    hist_bkg_NC->Write();
-    hist_bkg_1->Write();
-    hist_bkg_gamma->Write();
-    KE_primary->Write();
-    KE_secondary->Write();
-    neutronParentPDG->Write();
-    neutronParentPDG_case4->Write();
-    signal_no_cut->Write();
 
     TCanvas * can = new TCanvas;
     can->Divide(2,2);
     can->cd(1);
-    hist_signal_nocut->Draw("colz");
+    hist_sig_arm_vs_time->Draw("colz");
     can->cd(2);
     hist_bkg_out3DST->Draw("colz");
     can->cd(3);
     hist_bkg_NC->Draw("colz");
     can->cd(4);
-    hist_bkg_1_nocut->Draw("colz");
+    hist_bkg_1_arm_vs_time->Draw("colz");
     can->SaveAs("4plots.pdf");
     can->Clear();
 
-    hist_bkg_gamma->Draw("colz");
-    can->SaveAs("hist_bkg_gamma.pdf");
-    can->Clear();
-
     distance_vtx_to_deathpoint->Draw();
+    distance_vtx_to_deathpoint->Write();
     can->SaveAs("distance_vtx_to_deathpoint.pdf");
     can->Clear();
 
-    signal_ang_vs_dis_linear_cut->Draw("colz");
-    signal_ang_vs_dis_linear_cut->Write();
-    can->SaveAs("signal_ang_vs_dis.pdf");
+    //lever arm vs time 
+    hist_sig_arm_vs_time->Draw("colz");
+    hist_sig_arm_vs_time->Write();
+    can->SaveAs("hist_sig_arm_vs_time.pdf");
     can->Clear();
 
-    bkg_ang_vs_dis_linear_cut->Draw("colz");
-    bkg_ang_vs_dis_linear_cut->Write();
-    can->SaveAs("bkg_ang_vs_dis.pdf");
+    hist_bkg_1_arm_vs_time->Draw("colz");
+    hist_bkg_1_arm_vs_time->Write();
+    can->SaveAs("hist_bkg_1_arm_vs_time.pdf");
     can->Clear();
 
-    signal_ang_vs_dis->Draw("colz");
-    signal_ang_vs_dis->Write();
-    can->SaveAs("signal_a_vs_d_nocut.pdf");
+    hist_bkg_gamma_arm_vs_time->Draw("colz");
+    hist_bkg_gamma_arm_vs_time->Write();
+    can->SaveAs("hist_bkg_gamma_arm_vs_time.pdf");
     can->Clear();
 
-    hist_signal_nocut->Draw("colz");
-    hist_signal_nocut->Write();
-    can->SaveAs("hist_signal_nocut.pdf");
+    hist_bkg_1_gamma_arm_vs_time->Draw("colz");
+    hist_bkg_1_gamma_arm_vs_time->Write();
+    can->SaveAs("hist_bkg_1_gamma_arm_vs_time.pdf");
+    can->Clear();
+    
+    //lever arm vs time with cut
+    hist_sig_arm_vs_time_linear_cut->Draw("colz");
+    hist_sig_arm_vs_time_linear_cut->Write();
+    can->SaveAs("hist_sig_arm_vs_time_linear_cut.pdf");
     can->Clear();
 
-    hist_bkg_1_nocut->Draw("colz");
-    hist_bkg_1_nocut->Write();
-    can->SaveAs("hist_bkg_1_nocut.pdf");
+    hist_bkg_1_arm_vs_time_linear_cut->Draw("colz");
+    hist_bkg_1_arm_vs_time_linear_cut->Write();
+    can->SaveAs("hist_bkg_1_arm_vs_time_linear_cut.pdf");
     can->Clear();
 
-    bkg_ang_vs_dis->Draw("colz");
-    bkg_ang_vs_dis->Write();
-    can->SaveAs("bkg_a_vs_d_nocut.pdf");
+    hist_bkg_gamma_arm_vs_time_linear_cut->Draw("colz");
+    hist_bkg_gamma_arm_vs_time_linear_cut->Write();
+    can->SaveAs("hist_bkg_gamma_arm_vs_time_linear_cut.pdf");
     can->Clear();
 
-    TH2F * purity_distribution_ang_vs_dis_linear_cut = (TH2F*)signal_ang_vs_dis_linear_cut->Clone();
-    bkg_ang_vs_dis_linear_cut->Add(signal_ang_vs_dis_linear_cut);
-    purity_distribution_ang_vs_dis_linear_cut->SetStats(0);
-    purity_distribution_ang_vs_dis_linear_cut->SetMinimum(0);
-    purity_distribution_ang_vs_dis_linear_cut->Divide(bkg_ang_vs_dis_linear_cut);
-    purity_distribution_ang_vs_dis_linear_cut->Draw("colz");
-    purity_distribution_ang_vs_dis_linear_cut->SetTitle("purity");
-    can->SaveAs("purity_distribution_ang_vs_dis_linear_cut.pdf");
+    hist_bkg_1_gamma_arm_vs_time_linear_cut->Draw("colz");
+    hist_bkg_1_gamma_arm_vs_time_linear_cut->Write();
+    can->SaveAs("hist_bkg_1_gamma_arm_vs_time_linear_cut.pdf");
+    can->Clear();
+    
+    //angla vs lever arm 
+    hist_sig_ang_vs_dis->Draw("colz");
+    hist_sig_ang_vs_dis->Write();
+    can->SaveAs("hist_sig_ang_vs_dis.pdf");
     can->Clear();
 
-    TH2F * purity_distribution_ang_vs_dis = (TH2F*)signal_ang_vs_dis->Clone();
-    bkg_ang_vs_dis->Add(signal_ang_vs_dis);
-    purity_distribution_ang_vs_dis->SetStats(0);
-    purity_distribution_ang_vs_dis->SetMinimum(0);
-    purity_distribution_ang_vs_dis->Divide(bkg_ang_vs_dis);
-    purity_distribution_ang_vs_dis->Draw("colz");
-    purity_distribution_ang_vs_dis->SetTitle("purity");
-    can->SaveAs("purity_distribution_ang_vs_dis.pdf");
+    hist_bkg_1_ang_vs_dis->Draw("colz");
+    hist_bkg_1_ang_vs_dis->Write();
+    can->SaveAs("hist_bkg_1_ang_vs_dis.pdf");
     can->Clear();
 
-    signal_2d_linear_cut->Draw("colz");
-    signal_2d_linear_cut->Write();
-    can->SaveAs("signal_2d_linear_cut.pdf");
+    hist_bkg_gamma_ang_vs_dis->Draw("colz");
+    hist_bkg_gamma_ang_vs_dis->Write();
+    can->SaveAs("hist_bkg_gamma_ang_vs_dis.pdf");
     can->Clear();
 
-    background_2d_linear_cut->Draw("colz");
-    background_2d_linear_cut->Write();
-    can->SaveAs("background_2d_linear_cut.pdf");
+    hist_bkg_1_gamma_ang_vs_dis->Draw("colz");
+    hist_bkg_1_gamma_ang_vs_dis->Write();
+    can->SaveAs("hist_bkg_1_gamma_ang_vs_dis.pdf");
+    can->Clear();
+    
+    //angle vs lever arm with cut
+    hist_sig_ang_vs_dis_linear_cut->Draw("colz");
+    hist_sig_ang_vs_dis_linear_cut->Write();
+    can->SaveAs("hist_sig_ang_vs_dis_linear_cut.pdf");
     can->Clear();
 
-    TH2F * purity_linear_cut = (TH2F*)signal_2d_linear_cut->Clone();
-    background_2d_linear_cut->Add(signal_2d_linear_cut);
-    purity_linear_cut->Divide(background_2d_linear_cut);
-    purity_linear_cut->SetStats(0);
-    purity_linear_cut->SetTitle("purity with cut");
-    purity_linear_cut->SetMaximum(1);
-    purity_linear_cut->Draw("colz");
-    purity_linear_cut->Write();
-    can->SaveAs("purity_linear_cut.pdf");
+    hist_bkg_gamma_ang_vs_dis_linear_cut->Draw("colz");
+    hist_bkg_gamma_ang_vs_dis_linear_cut->Write();
+    can->SaveAs("hist_bkg_gamma_ang_vs_dis_linear_cut.pdf");
     can->Clear();
 
-    hist_bkg_1_nocut->Add(hist_signal_nocut);
-    hist_signal_nocut->Divide(hist_bkg_1_nocut);
-    hist_signal_nocut->SetStats(0);
-    hist_signal_nocut->SetTitle("purity (nocut)");
-    hist_signal_nocut->SetMaximum(1);
-    hist_signal_nocut->Draw("colz");
-    hist_signal_nocut->Write();
-    can->SaveAs("purity_nocut.pdf");
+    hist_bkg_1_ang_vs_dis_linear_cut->Draw("colz");
+    hist_bkg_1_ang_vs_dis_linear_cut->Write();
+    can->SaveAs("hist_bkg_1_ang_vs_dis_linear_cut.pdf");
     can->Clear();
 
+    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Draw("colz");
+    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Write();
+    can->SaveAs("hist_bkg_1_gamma_ang_vs_dis_linear_cut.pdf");
+    can->Clear();
+    
+    //gamma
+    //{
+    TH2F * purity_distribution_gamma_ang_vs_dis_linear_cut = (TH2F*)hist_sig_ang_vs_dis_linear_cut->Clone();
+    hist_bkg_gamma_ang_vs_dis_linear_cut->Add(hist_sig_ang_vs_dis_linear_cut);
+    purity_distribution_gamma_ang_vs_dis_linear_cut->SetStats(0);
+    purity_distribution_gamma_ang_vs_dis_linear_cut->SetMinimum(0);
+    purity_distribution_gamma_ang_vs_dis_linear_cut->Divide(hist_bkg_gamma_ang_vs_dis_linear_cut);
+    purity_distribution_gamma_ang_vs_dis_linear_cut->SetTitle("purity");
+    purity_distribution_gamma_ang_vs_dis_linear_cut->Draw("colz");
+    can->SaveAs("purity_distribution_gamma_ang_vs_dis_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_distribution_gamma_ang_vs_dis = (TH2F*)hist_sig_ang_vs_dis->Clone();
+    hist_bkg_gamma_ang_vs_dis->Add(hist_sig_ang_vs_dis);
+    purity_distribution_gamma_ang_vs_dis->SetStats(0);
+    purity_distribution_gamma_ang_vs_dis->SetMinimum(0);
+    purity_distribution_gamma_ang_vs_dis->Divide(hist_bkg_gamma_ang_vs_dis);
+    purity_distribution_gamma_ang_vs_dis->SetTitle("purity(gamma)");
+    purity_distribution_gamma_ang_vs_dis->Draw("colz");
+    can->SaveAs("purity_distribution_gamma_ang_vs_dis.pdf");
+    can->Clear();
+
+    TH2F * purity_gamma_linear_cut = (TH2F*)hist_sig_arm_vs_time_linear_cut->Clone();
+    hist_bkg_gamma_arm_vs_time_linear_cut->Add(hist_sig_arm_vs_time_linear_cut);
+    purity_gamma_linear_cut->Divide(hist_bkg_gamma_arm_vs_time_linear_cut);
+    purity_gamma_linear_cut->SetStats(0);
+    purity_gamma_linear_cut->SetTitle("purity with cut");
+    purity_gamma_linear_cut->SetMaximum(1);
+    purity_gamma_linear_cut->Draw("colz");
+    purity_gamma_linear_cut->Write();
+    can->SaveAs("purity_gamma_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_gamma = (TH2F*)hist_sig_arm_vs_time->Clone();
+    hist_bkg_gamma_arm_vs_time->Add(hist_sig_arm_vs_time);
+    purity_gamma->Divide(hist_bkg_gamma_arm_vs_time);
+    purity_gamma->SetStats(0);
+    purity_gamma->SetTitle("purity(gamma)");
+    purity_gamma->SetMaximum(1);
+    purity_gamma->Draw("colz");
+    purity_gamma->Write();
+    can->SaveAs("purity_gamma.pdf");
+    can->Clear();
+    //}
+
+    //secondary
+    //{
+    TH2F * purity_distribution_1_ang_vs_dis_linear_cut = (TH2F*)hist_sig_ang_vs_dis_linear_cut->Clone();
+    hist_bkg_1_ang_vs_dis_linear_cut->Add(hist_sig_ang_vs_dis_linear_cut);
+    purity_distribution_1_ang_vs_dis_linear_cut->SetStats(0);
+    purity_distribution_1_ang_vs_dis_linear_cut->SetMinimum(0);
+    purity_distribution_1_ang_vs_dis_linear_cut->Divide(hist_bkg_1_ang_vs_dis_linear_cut);
+    purity_distribution_1_ang_vs_dis_linear_cut->SetTitle("purity");
+    purity_distribution_1_ang_vs_dis_linear_cut->Draw("colz");
+    can->SaveAs("purity_distribution_1_ang_vs_dis_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_distribution_1_ang_vs_dis = (TH2F*)hist_sig_ang_vs_dis->Clone();
+    hist_bkg_1_ang_vs_dis->Add(hist_sig_ang_vs_dis);
+    purity_distribution_1_ang_vs_dis->SetStats(0);
+    purity_distribution_1_ang_vs_dis->SetMinimum(0);
+    purity_distribution_1_ang_vs_dis->Divide(hist_bkg_1_ang_vs_dis);
+    purity_distribution_1_ang_vs_dis->SetTitle("purity(secondary)");
+    purity_distribution_1_ang_vs_dis->Draw("colz");
+    can->SaveAs("purity_distribution_1_ang_vs_dis.pdf");
+    can->Clear();
+
+    TH2F * purity_1_linear_cut = (TH2F*)hist_sig_arm_vs_time_linear_cut->Clone();
+    hist_bkg_1_arm_vs_time_linear_cut->Add(hist_sig_arm_vs_time_linear_cut);
+    purity_1_linear_cut->Divide(hist_bkg_1_arm_vs_time_linear_cut);
+    purity_1_linear_cut->SetStats(0);
+    purity_1_linear_cut->SetTitle("purity with cut");
+    purity_1_linear_cut->SetMaximum(1);
+    purity_1_linear_cut->Draw("colz");
+    purity_1_linear_cut->Write();
+    can->SaveAs("purity_1_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_1 = (TH2F*)hist_sig_arm_vs_time->Clone();
+    hist_bkg_1_arm_vs_time->Add(hist_sig_arm_vs_time);
+    purity_1->Divide(hist_bkg_1_arm_vs_time);
+    purity_1->SetStats(0);
+    purity_1->SetTitle("purity(secondary)");
+    purity_1->SetMaximum(1);
+    purity_1->Draw("colz");
+    purity_1->Write();
+    can->SaveAs("purity_1.pdf");
+    can->Clear();
+    //}
+
+    //secondary+gamma
+    //{
+    TH2F * purity_distribution_1_gamma_ang_vs_dis_linear_cut = (TH2F*)hist_sig_ang_vs_dis_linear_cut->Clone();
+    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Add(hist_sig_ang_vs_dis_linear_cut);
+    purity_distribution_1_gamma_ang_vs_dis_linear_cut->SetStats(0);
+    purity_distribution_1_gamma_ang_vs_dis_linear_cut->SetMinimum(0);
+    purity_distribution_1_gamma_ang_vs_dis_linear_cut->Divide(hist_bkg_1_gamma_ang_vs_dis_linear_cut);
+    purity_distribution_1_gamma_ang_vs_dis_linear_cut->SetTitle("purity");
+    purity_distribution_1_gamma_ang_vs_dis_linear_cut->Draw("colz");
+    can->SaveAs("purity_distribution_1_gamma_ang_vs_dis_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_distribution_1_gamma_ang_vs_dis = (TH2F*)hist_sig_ang_vs_dis->Clone();
+    hist_bkg_1_gamma_ang_vs_dis->Add(hist_sig_ang_vs_dis);
+    purity_distribution_1_gamma_ang_vs_dis->SetStats(0);
+    purity_distribution_1_gamma_ang_vs_dis->SetMinimum(0);
+    purity_distribution_1_gamma_ang_vs_dis->Divide(hist_bkg_1_gamma_ang_vs_dis);
+    purity_distribution_1_gamma_ang_vs_dis->SetTitle("purity(secondary+gamma)");
+    purity_distribution_1_gamma_ang_vs_dis->Draw("colz");
+    can->SaveAs("purity_distribution_1_gamma_ang_vs_dis.pdf");
+    can->Clear();
+
+    TH2F * purity_1_gamma_linear_cut = (TH2F*)hist_sig_arm_vs_time_linear_cut->Clone();
+    hist_bkg_1_gamma_arm_vs_time_linear_cut->Add(hist_sig_arm_vs_time_linear_cut);
+    purity_1_gamma_linear_cut->Divide(hist_bkg_1_gamma_arm_vs_time_linear_cut);
+    purity_1_gamma_linear_cut->SetStats(0);
+    purity_1_gamma_linear_cut->SetTitle("purity with cut");
+    purity_1_gamma_linear_cut->SetMaximum(1);
+    purity_1_gamma_linear_cut->Draw("colz");
+    purity_1_gamma_linear_cut->Write();
+    can->SaveAs("purity_1_gamma_linear_cut.pdf");
+    can->Clear();
+
+    TH2F * purity_1_gamma = (TH2F*)hist_sig_arm_vs_time->Clone();
+    hist_bkg_1_gamma_arm_vs_time->Add(hist_sig_arm_vs_time);
+    purity_1_gamma->Divide(hist_bkg_1_gamma_arm_vs_time);
+    purity_1_gamma->SetStats(0);
+    purity_1_gamma->SetTitle("purity(secondary+gamma)");
+    purity_1_gamma->SetMaximum(1);
+    purity_1_gamma->Draw("colz");
+    purity_1_gamma->Write();
+    can->SaveAs("purity_1_gamma.pdf");
+    can->Clear();
+    //}
+    
+    //gamma 
     can->Divide(2,1);
     can->SetCanvasSize(700,300);
     can->cd(1);
-    purity_linear_cut->Draw("colz");
+    purity_gamma->Draw("colz");
     can->cd(2);
-    hist_signal_nocut->Draw("colz");
-    can->SaveAs("2purity.pdf");
+    purity_gamma_linear_cut->Draw("colz");
+    can->SaveAs("2purity(gamma).pdf");
+    can->Clear();
+    
+    //secondary 
+    can->Divide(2,1);
+    can->SetCanvasSize(700,300);
+    can->cd(1);
+    purity_1->Draw("colz");
+    can->cd(2);
+    purity_1_linear_cut->Draw("colz");
+    can->SaveAs("2purity(secondary).pdf");
+    can->Clear();
+
+    //secondary+gamma
+    can->Divide(2,1);
+    can->SetCanvasSize(700,300);
+    can->cd(1);
+    purity_1_gamma->Draw("colz");
+    can->cd(2);
+    purity_1_gamma_linear_cut->Draw("colz");
+    can->SaveAs("2purity(secondary+gamma).pdf");
     can->Clear();
 
     fi1->Close();
-    delete fi1;
-    delete can;
-    delete hist_signal ;
-    delete hist_bkg_out3DST; 
-    delete hist_bkg_NC; 
-    delete hist_bkg_1; 
-    delete hist_bkg_gamma; 
-    delete hist_neutron_hit; 
-    delete neutronParentPDG; 
-    delete neutronParentPDG_case4; 
-    delete KE_secondary; 
-    delete KE_primary; 
-    delete signal_no_cut; 
-    delete signal_2d_linear_cut;
-    delete background_2d_linear_cut;
-    delete hist_signal_nocut;
-    delete hist_bkg_1_nocut;
-    delete signal_ang_vs_dis;
-    delete bkg_ang_vs_dis;
-    delete signal_ang_vs_dis_linear_cut;
-    delete bkg_ang_vs_dis_linear_cut;
-    delete distance_vtx_to_deathpoint;
 }
