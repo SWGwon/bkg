@@ -263,15 +263,10 @@ void analyze(string file)
     float t_vtx[3], t_vtxTime;
     float t_piDeath[3], t_protonDeath[3];
 
-    float vec_piDeath_to_hit[3];
-    float vec_protonDeath_to_hit[3];
+    float vec_piDeath_to_neutron_hit[3];
+    float vec_protonDeath_to_neutron_hit[3];
     float vec_vtx_to_piDeath[3];
     float vec_vtx_to_protonDeath[3];
-
-    float t_gammaHitX[1000], t_gammaHitY[1000], t_gammaHitZ[1000];
-    float t_gammaStartingPointX[1000], t_gammaStartingPointY[1000], t_gammaStartingPointZ[1000];
-    float t_gammaHitT[1000], t_gammaParentId[1000], t_gammaParentPDG[1000];
-    float t_gammaHitE[1000], t_gammaTrueE[1000];
 
     int PDG = 0;
     int t_nFS, t_fsPdg[1000];
@@ -294,27 +289,15 @@ void analyze(string file)
     tree->SetBranchAddress("piDeath", &t_piDeath);
     tree->SetBranchAddress("protonDeath", &t_protonDeath);
 
-    tree->SetBranchAddress("gammaHitX", &t_gammaHitX);
-    tree->SetBranchAddress("gammaHitY", &t_gammaHitY);
-    tree->SetBranchAddress("gammaHitZ", &t_gammaHitZ);
-    tree->SetBranchAddress("gammaStartingPointX", &t_gammaStartingPointX);
-    tree->SetBranchAddress("gammaStartingPointY", &t_gammaStartingPointY);
-    tree->SetBranchAddress("gammaStartingPointZ", &t_gammaStartingPointZ);
-    tree->SetBranchAddress("gammaHitT", &t_gammaHitT);
-    tree->SetBranchAddress("gammaParentId", &t_gammaParentId);
-    tree->SetBranchAddress("gammaParentPDG", &t_gammaParentPDG);
-    tree->SetBranchAddress("gammaHitE", &t_gammaHitE);
-    tree->SetBranchAddress("gammaTrueE", &t_gammaTrueE);
-
     int nevents = tree->GetEntries();
 
     for(int event = 0; event < nevents; event++)
     {
-        Hit_t earliest_hit;
+        Hit_t earliest_neutron_hit;
+        Hit_t earliest_neutron_hit_from_pion;
 
         int num_pi = 0;
         int num_proton = 0;
-
         tree->GetEntry(event);
         //if(abs(t_vtx[0]) < 50 && abs(t_vtx[1]) < 50 && abs(t_vtx[2]) < 50)
         if(abs(t_vtx[0]) < 100 && abs(t_vtx[1]) < 100 && t_vtx[2] < 140 && t_vtx[2] > -40)
@@ -360,27 +343,29 @@ void analyze(string file)
                 continue;
 
             float temp_earliest_time = 1000000;
-
-            for(int n_Hit = 0; n_Hit < 1000; n_Hit++)
+            float temp_earliest_time_for_pi = 1000000;
+            for(int n_neutronHit = 0; n_neutronHit < 500; n_neutronHit++)
             {
-                if((t_neutronHitX[n_Hit] != 0 && t_neutronHitT[n_Hit] < temp_earliest_time && t_neutronHitE[n_Hit] > energyHitCut) ||
-                   (t_gammaHitX[n_Hit] != 0 && t_gammaHitT[n_Hit] < temp_earliest_time && t_gammaHitE[n_Hit] > energyHitCut))
+                if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
-                    temp_earliest_time = t_neutronHitT[n_Hit];
-
-                    if(abs(t_neutronHitX[n_Hit]) < 120 && 
-                            abs(t_neutronHitY[n_Hit]) < 120 && 
-                            t_neutronHitZ[n_Hit] < 150 &&
-                            t_neutronHitZ[n_Hit] > -50)
+                    temp_earliest_time = t_neutronHitT[n_neutronHit];
+                    //look for a neutron hit in 3DST
+                    /*
+                       if(abs(t_neutronHitX[n_neutronHit]) < 120 && 
+                       abs(t_neutronHitY[n_neutronHit]) < 120 && abs(t_neutronHitZ[n_neutronHit]) < 100) */
+                    if(abs(t_neutronHitX[n_neutronHit]) < 120 && 
+                            abs(t_neutronHitY[n_neutronHit]) < 120 && 
+                            t_neutronHitZ[n_neutronHit] < 150 &&
+                            t_neutronHitZ[n_neutronHit] > -50)
                     {
                         //calculate lever arm
                         float trackLength = pow(
-                                pow(t_neutronHitX[n_Hit] - t_vtx[0],2)+
-                                pow(t_neutronHitY[n_Hit] - t_vtx[1],2)+
-                                pow(t_neutronHitZ[n_Hit] - t_vtx[2],2),0.5);
+                                pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
+                                pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
+                                pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
 
                         //calculate signal window; time of flight
-                        float signalWindow = t_neutronHitT[n_Hit] - t_vtxTime;
+                        float signalWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
 
                         //Fix a bug from edep-sim
                         if(signalWindow == 1)
@@ -388,111 +373,111 @@ void analyze(string file)
 
                         if(signalWindow > 0)
                         {
-                            earliest_hit.timeWindow = signalWindow;
-                            earliest_hit.trackLength = trackLength;
-                            earliest_hit.energyDeposit = t_neutronHitE[n_Hit];
+                            earliest_neutron_hit.timeWindow = signalWindow;
+                            earliest_neutron_hit.trackLength = trackLength;
+                            earliest_neutron_hit.energyDeposit = t_neutronHitE[n_neutronHit];
 
-                            earliest_hit.vtxSignal[0] = t_vtx[0];
-                            earliest_hit.vtxSignal[1] = t_vtx[1];
-                            earliest_hit.vtxSignal[2] = t_vtx[2];
+                            earliest_neutron_hit.vtxSignal[0] = t_vtx[0];
+                            earliest_neutron_hit.vtxSignal[1] = t_vtx[1];
+                            earliest_neutron_hit.vtxSignal[2] = t_vtx[2];
 
-                            earliest_hit.piDeath[0] = t_piDeath[0];
-                            earliest_hit.piDeath[1] = t_piDeath[1];
-                            earliest_hit.piDeath[2] = t_piDeath[2];
+                            earliest_neutron_hit.piDeath[0] = t_piDeath[0];
+                            earliest_neutron_hit.piDeath[1] = t_piDeath[1];
+                            earliest_neutron_hit.piDeath[2] = t_piDeath[2];
 
-                            earliest_hit.protonDeath[0] = t_protonDeath[0];
-                            earliest_hit.protonDeath[1] = t_protonDeath[1];
-                            earliest_hit.protonDeath[2] = t_protonDeath[2];
+                            earliest_neutron_hit.protonDeath[0] = t_protonDeath[0];
+                            earliest_neutron_hit.protonDeath[1] = t_protonDeath[1];
+                            earliest_neutron_hit.protonDeath[2] = t_protonDeath[2];
 
-                            earliest_hit.neutronHit[0] = t_neutronHitX[n_Hit];
-                            earliest_hit.neutronHit[1] = t_neutronHitY[n_Hit];
-                            earliest_hit.neutronHit[2] = t_neutronHitZ[n_Hit];
-                            earliest_hit.neutronTrueT = t_neutronHitT[n_Hit];
+                            earliest_neutron_hit.neutronHit[0] = t_neutronHitX[n_neutronHit];
+                            earliest_neutron_hit.neutronHit[1] = t_neutronHitY[n_neutronHit];
+                            earliest_neutron_hit.neutronHit[2] = t_neutronHitZ[n_neutronHit];
+                            earliest_neutron_hit.neutronTrueT = t_neutronHitT[n_neutronHit];
 
-                            earliest_hit.neutronStartingPoint[0] = t_neutronStartingPointX[n_Hit];
-                            earliest_hit.neutronStartingPoint[1] = t_neutronStartingPointY[n_Hit];
-                            earliest_hit.neutronStartingPoint[2] = t_neutronStartingPointZ[n_Hit];
+                            earliest_neutron_hit.neutronStartingPoint[0] = t_neutronStartingPointX[n_neutronHit];
+                            earliest_neutron_hit.neutronStartingPoint[1] = t_neutronStartingPointY[n_neutronHit];
+                            earliest_neutron_hit.neutronStartingPoint[2] = t_neutronStartingPointZ[n_neutronHit];
 
-                            earliest_hit.neutronParentId = t_neutronParentId[n_Hit];
-                            earliest_hit.neutronParentPdg = t_neutronParentPDG[n_Hit];
+                            earliest_neutron_hit.neutronParentId = t_neutronParentId[n_neutronHit];
+                            earliest_neutron_hit.neutronParentPdg = t_neutronParentPDG[n_neutronHit];
 
-                            earliest_hit.vtxTime = t_vtxTime;
-                            earliest_hit.isEmpty = 0;
-                            if(t_neutronStartingPointX[n_Hit] == t_piDeath[0])
-                                earliest_hit.isFromPion = 1;
+                            earliest_neutron_hit.vtxTime = t_vtxTime;
+                            earliest_neutron_hit.isEmpty = 0;
+                            if(t_neutronStartingPointX[n_neutronHit] == t_piDeath[0])
+                                earliest_neutron_hit.isFromPion = 1;
                             else
-                                earliest_hit.isFromPion = 0;
-                            if(t_neutronStartingPointX[n_Hit] == t_protonDeath[0])
-                                earliest_hit.isFromProton = 1;
+                                earliest_neutron_hit.isFromPion = 0;
+                            if(t_neutronStartingPointX[n_neutronHit] == t_protonDeath[0])
+                                earliest_neutron_hit.isFromProton = 1;
                             else
-                                earliest_hit.isFromProton = 0;
+                                earliest_neutron_hit.isFromProton = 0;
                         }
                     }
                 }
             }
 
-            if(earliest_hit.isEmpty == false)
+            if(earliest_neutron_hit.isEmpty == false)
             {
-                if(earliest_hit.neutronParentId > 0)
+                if(earliest_neutron_hit.neutronParentId > 0)
                 {
-                    if(abs(earliest_hit.neutronParentPdg) == 211)
+                    if(abs(earliest_neutron_hit.neutronParentPdg) == 211)
                         number_of_secondary_pion += 1;
-                    else if(earliest_hit.neutronParentPdg == 2212)
+                    else if(earliest_neutron_hit.neutronParentPdg == 2212)
                         number_of_secondary_proton += 1;
-                    else if(earliest_hit.neutronParentPdg == 2112)
+                    else if(earliest_neutron_hit.neutronParentPdg == 2112)
                         number_of_secondary_neutron += 1;
                     else
                         number_of_secondary_other += 1;
                 }
-                if(earliest_hit.neutronStartingPoint[0] != -1 
-                        &&earliest_hit.neutronStartingPoint[1] != -1
-                        &&earliest_hit.neutronStartingPoint[2] != -1)
+                if(earliest_neutron_hit.neutronStartingPoint[0] != -1 
+                        &&earliest_neutron_hit.neutronStartingPoint[1] != -1
+                        &&earliest_neutron_hit.neutronStartingPoint[2] != -1)
                 {
                     ////piDeath point to neutron hit
                     for(int i = 0; i < 3; i++)
                     {
-                        vec_piDeath_to_hit[i] = earliest_hit.neutronHit[i]-earliest_hit.piDeath[i];
+                        vec_piDeath_to_neutron_hit[i] = earliest_neutron_hit.neutronHit[i]-earliest_neutron_hit.piDeath[i];
 
-                        vec_vtx_to_piDeath[i] = earliest_hit.piDeath[i]-earliest_hit.vtxSignal[i];
+                        vec_vtx_to_piDeath[i] = earliest_neutron_hit.piDeath[i]-earliest_neutron_hit.vtxSignal[i];
 
-                        vec_protonDeath_to_hit[i] = earliest_hit.neutronHit[i]-earliest_hit.protonDeath[i];
+                        vec_protonDeath_to_neutron_hit[i] = earliest_neutron_hit.neutronHit[i]-earliest_neutron_hit.protonDeath[i];
 
-                        vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.vtxSignal[i];
+                        vec_vtx_to_protonDeath[i] = earliest_neutron_hit.protonDeath[i]-earliest_neutron_hit.vtxSignal[i];
                     }
 
                     ////pi case
                     if(num_fspi == 1 && num_fsp ==0)
                     {
                         ////distance, angle cut 2D plot
-                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_hit.vtxSignal,earliest_hit.piDeath));
+                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.piDeath));
                         //signal
-                        if(earliest_hit.neutronParentId == -1 ||earliest_hit.neutronParentId == 0)
+                        if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                         {
-                            hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                            hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                            signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
                             //linear cut
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
-                                //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
+                            if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
+                                //if(earliest_neutron_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.70)
                             {
-                                signal_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
                             }
                         }
                         //background
-                        if(earliest_hit.neutronParentId > 0)
+                        if(earliest_neutron_hit.neutronParentId > 0)
                         {
-                            if(abs(earliest_hit.piDeath[0]) < 120 && abs(earliest_hit.piDeath[1]) < 120 && earliest_hit.piDeath[2] < 150 && earliest_hit.piDeath[2] > -50)
+                            if(abs(earliest_neutron_hit.piDeath[0]) < 120 && abs(earliest_neutron_hit.piDeath[1]) < 120 && earliest_neutron_hit.piDeath[2] < 150 && earliest_neutron_hit.piDeath[2] > -50)
                             {
-                                if(earliest_hit.isFromPion)
+                                if(earliest_neutron_hit.isFromPion)
                                 {
-                                    hist_bkg_1_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                    bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
                                     //linear cut
-                                    if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
-                                        //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
+                                    if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit)-cut_y_intercept > 0)
+                                        //if(earliest_neutron_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.70)
                                     {
-                                        background_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                        background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_neutron_hit,vec_vtx_to_piDeath),earliest_neutron_hit.trackLength);
                                     }
                                 }
                             }
@@ -503,35 +488,35 @@ void analyze(string file)
                     if(num_fspi == 0 && num_fsp ==1)
                     {
                         ////distance, angle cut 2D plot
-                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_hit.vtxSignal,earliest_hit.protonDeath));
+                        distance_vtx_to_deathpoint->Fill(GetDistance(earliest_neutron_hit.vtxSignal,earliest_neutron_hit.protonDeath));
                         //signal
-                        if(earliest_hit.neutronParentId == -1 ||earliest_hit.neutronParentId == 0)
+                        if(earliest_neutron_hit.neutronParentId == -1 ||earliest_neutron_hit.neutronParentId == 0)
                         {
-                            hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                            signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                            hist_signal_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                            signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
                             //linear cut
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
-                                //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.90)
+                            if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-cut_y_intercept < 0)
+                                //if(earliest_neutron_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.90)
                             {
-                                signal_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                signal_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                signal_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
                             }
                         }
                         //background
-                        if(earliest_hit.neutronParentId > 0)
+                        if(earliest_neutron_hit.neutronParentId > 0)
                         {
-                            if(abs(earliest_hit.protonDeath[0]) < 120 && abs(earliest_hit.protonDeath[1]) < 120 && earliest_hit.protonDeath[2] < 150 && earliest_hit.protonDeath[2] > -50)
+                            if(abs(earliest_neutron_hit.protonDeath[0]) < 120 && abs(earliest_neutron_hit.protonDeath[1]) < 120 && earliest_neutron_hit.protonDeath[2] < 150 && earliest_neutron_hit.protonDeath[2] > -50)
                             {
-                                if(earliest_hit.isFromProton)
+                                if(earliest_neutron_hit.isFromProton)
                                 {
-                                    hist_bkg_1_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                    bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_nocut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                    bkg_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
                                     //linear cut
-                                    if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
-                                        //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.90)
+                                    if(earliest_neutron_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_neutron_hit)-cut_y_intercept < 0)
+                                        //if(earliest_neutron_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_neutron_hit) > 0.90)
                                     {
-                                        background_2d_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                        background_2d_linear_cut->Fill(earliest_neutron_hit.trackLength,earliest_neutron_hit.timeWindow);
+                                        bkg_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_neutron_hit,vec_vtx_to_protonDeath),earliest_neutron_hit.trackLength);
                                     }
                                 }
                             }
@@ -545,7 +530,7 @@ void analyze(string file)
     delete _file;
 }
 
-void gamma()
+void neutron()
 {
     int endPROD, beginPROD, filenum;
     
@@ -556,7 +541,7 @@ void gamma()
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma.root",i));
+        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_test.root",i));
         //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
     }
 
