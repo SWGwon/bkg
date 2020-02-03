@@ -549,7 +549,7 @@ void analyze(string file)
                         distance_vtx_to_deathpoint->Fill(GetDistance(earliest_hit.vtxSignal,earliest_hit.piDeath));
 
                         //signal
-                        if(earliest_hit.isNeutron && earliest_hit.parentId == -1 ||earliest_hit.parentId == 0)
+                        if(earliest_hit.isNeutron && (earliest_hit.parentId == -1 ||earliest_hit.parentId == 0))
                         {
                             hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             signal_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
@@ -601,7 +601,7 @@ void analyze(string file)
                         ////distance, angle cut 2D plot
                         distance_vtx_to_deathpoint->Fill(GetDistance(earliest_hit.vtxSignal,earliest_hit.protonDeath));
                         //signal
-                        if(earliest_hit.isNeutron && earliest_hit.parentId == -1 ||earliest_hit.parentId == 0)
+                        if(earliest_hit.isNeutron && (earliest_hit.parentId == -1 ||earliest_hit.parentId == 0))
                         {
                             hist_signal_nocut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             signal_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
