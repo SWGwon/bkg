@@ -87,10 +87,14 @@ int number_of_secondary_other = 0;
 
 //change this part to do slope, intercept test
 int cut_slope = 0;
-int cut_y_intercept = 0;
+int cut_y_intercept = 10000;
 //channel type
-int num_fspi = 1;   //number of fs charged pion
-int num_fsp = 0;    //number of fs proton
+int num_fspi = 0;   //number of fs charged pion
+int num_fsp = 1;    //number of fs proton
+
+int iftest = 0;
+double test_cut_angle = 0.97;
+double test_cut_distance = 20;
 
 class Hit_t 
 {
@@ -358,7 +362,7 @@ void analyze(string file)
                 continue;
 
             float temp_earliest_time = 1000000;
-            for(int n_neutronHit = 0; n_neutronHit < 500; n_neutronHit++)
+            for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
                 if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
@@ -432,15 +436,11 @@ void analyze(string file)
             }
 
             float temp_earliest_time_for_gamma = 1000000;
-            for(int n_gammaHit = 0; n_gammaHit < 500; n_gammaHit++)
+            for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
                 if(t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
                     temp_earliest_time_for_gamma = t_gammaHitT[n_gammaHit];
-                    //look for a neutron hit in 3DST
-                    /*
-                       if(abs(t_gammaHitX[n_gammaHit]) < 120 && 
-                       abs(t_gammaHitY[n_gammaHit]) < 120 && abs(t_gammaHitZ[n_gammaHit]) < 100) */
                     if(abs(t_gammaHitX[n_gammaHit]) < 120 && 
                             abs(t_gammaHitY[n_gammaHit]) < 120 && 
                             t_gammaHitZ[n_gammaHit] < 150 &&
@@ -542,6 +542,7 @@ void analyze(string file)
                         vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.vtxSignal[i];
                     }
 
+
                     ////pi case
                     if(num_fspi == 1 && num_fsp ==0)
                     {
@@ -554,11 +555,21 @@ void analyze(string file)
                             hist_sig_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             hist_sig_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                             //linear cut
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
-                                //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
+                            if(iftest == 0)
                             {
-                                hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
+                                {
+                                    hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                }
+                            }
+                            if(iftest == 1)
+                            {
+                                if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                {
+                                    hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                }
                             }
                         }
 
@@ -571,14 +582,27 @@ void analyze(string file)
                             hist_bkg_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                             hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
 
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
-                                //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
+                            if(iftest == 0)
                             {
-                                hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
+                                {
+                                    hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
 
-                                hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                }
+                            }
+                            if(iftest == 1)
+                            {
+                                if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                {
+                                    hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                    hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                }
                             }
                         }
                         if(earliest_hit.parentId > 0)
@@ -594,19 +618,33 @@ void analyze(string file)
                                     hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
 
                                     //linear cut
-                                    if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
-                                        //if(earliest_hit.trackLength < 40 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.70)
+                                    if(iftest == 0)
                                     {
-                                        hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                        if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit)-cut_y_intercept > 0)
+                                        {
+                                            hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                            hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
 
-                                        hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                        hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                        }
+                                    }
+                                    if(iftest == 1)
+                                    {
+                                        if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                        {
+                                            hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                            hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                            hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
 
                     ////proton case
                     if(num_fspi == 0 && num_fsp ==1)
@@ -619,11 +657,21 @@ void analyze(string file)
                             hist_sig_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             hist_sig_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                             //linear cut
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
-                                //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > 0.90)
+                            if(iftest == 0)
                             {
-                                hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
+                                {
+                                    hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                }
+                            }
+                            if(iftest == 1)
+                            {
+                                if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                {
+                                    hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                }
                             }
                         }
                         //background
@@ -635,13 +683,27 @@ void analyze(string file)
                             hist_bkg_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                             hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
 
-                            if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
+                            if(iftest == 0)
                             {
-                                hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
+                                {
+                                    hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
 
-                                hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                }
+                            }
+                            if(iftest == 1)
+                            {
+                                if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                {
+                                    hist_bkg_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                    hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                    hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                }
                             }
                         }
                         if(earliest_hit.parentId > 0)
@@ -657,14 +719,27 @@ void analyze(string file)
                                     hist_bkg_1_gamma_ang_vs_dis->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
 
                                     //linear cut
-                                    if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
-                                        //if(earliest_hit.trackLength < 30 && GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit) > 0.90)
+                                    if(iftest == 0)
                                     {
-                                        hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
-                                        hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                        if(earliest_hit.trackLength-cut_slope*GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit)-cut_y_intercept < 0)
+                                        {
+                                            hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                            hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
 
-                                        hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                        hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                        }
+                                    }
+                                    if(iftest == 1)
+                                    {
+                                        if(earliest_hit.trackLength < test_cut_distance && GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit) > test_cut_angle)
+                                        {
+                                            hist_bkg_1_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+                                            hist_bkg_1_gamma_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
+
+                                            hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                            hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                        }
                                     }
                                 }
                             }
@@ -684,7 +759,7 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 100;
+    filenum = 1000;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
@@ -714,6 +789,7 @@ void gamma()
     double efficiency = hist_sig_ang_vs_dis_linear_cut->GetEntries()/hist_sig_ang_vs_dis->GetEntries();
     double purity = hist_sig_ang_vs_dis_linear_cut->GetEntries()/(hist_sig_ang_vs_dis_linear_cut->GetEntries()+hist_bkg_1_gamma_ang_vs_dis_linear_cut->GetEntries());
     cout<<"purity: "<<purity<<endl;
+    cout<<"efficiency :"<<efficiency<<endl;
 
 
     TFile a(TString::Format("purity_%f",purity),"RECREATE");
