@@ -89,11 +89,14 @@ int number_of_secondary_other = 0;
 int cut_slope = 0;
 int cut_y_intercept = 10000;
 //channel type
-int num_fspi = 0;   //number of fs charged pion
-int num_fsp = 1;    //number of fs proton
+int num_fspi = 1;   //number of fs charged pion
+int num_fsp = 0;    //number of fs proton
 
-int iftest = 0;
-double test_cut_angle = 0.97;
+int num_primary_gamma = 0;
+int num_secondary_gamma = 0;
+
+int iftest = 1;
+double test_cut_angle = 0.60;
 double test_cut_distance = 20;
 
 class Hit_t 
@@ -108,6 +111,7 @@ class Hit_t
               vtxSignal[3],     // neutrino vertex position of the neutron
               vtxTime,      // neutrino  vertex time
               trueE,    //neutron true energy
+              CubeE,    //neutron cube energy
               trueT,    //neutron true time
               piDeath[3],      //pion death
               protonDeath[3];      //proton Death
@@ -125,6 +129,7 @@ class Hit_t
              isThereProton300;      // Is there a proton with KE > 300 MeV in FS particles
         bool isEmpty;
         bool isNeutron;
+        bool isGamma;
         bool isFromPion;
         bool isFromProton;
 
@@ -137,6 +142,7 @@ class Hit_t
             smearRec(0),
             vtxTime(0),      
             trueE(0), 
+            CubeE(0),
             trueT(0), 
             bkgLoc(125124123),        
             parentId(123124123),
@@ -146,7 +152,8 @@ class Hit_t
             isEmpty(1),
             isFromPion(0),
             isFromProton(0),
-            isNeutron(0)
+            isNeutron(0),
+            isGamma(0)
     {
         for(int i = 0; i < 3; i++)
         {
@@ -261,6 +268,9 @@ void analyze(string file)
     float t_neutronStartingPointX[1000], t_neutronStartingPointY[1000], t_neutronStartingPointZ[1000];
     float t_neutronHitT[1000], t_neutronParentId[1000], t_neutronParentPDG[1000];
     float t_neutronHitE[1000], t_neutronTrueE[1000];
+    float t_neutronCubeE[1000];
+    float t_neutronHitSmearT[1000];
+
     float t_vtx[3], t_vtxTime;
     float t_piDeath[3], t_protonDeath[3];
 
@@ -273,6 +283,8 @@ void analyze(string file)
     float t_gammaStartingPointX[1000], t_gammaStartingPointY[1000], t_gammaStartingPointZ[1000];
     float t_gammaHitT[1000], t_gammaParentId[1000], t_gammaParentPDG[1000];
     float t_gammaHitE[1000], t_gammaTrueE[1000];
+    float t_gammaCubeE[1000];
+    float t_gammaHitSmearT[1000];
 
     int PDG = 0;
     int t_nFS, t_fsPdg[1000];
@@ -288,6 +300,8 @@ void analyze(string file)
     tree->SetBranchAddress("neutronParentPDG", &t_neutronParentPDG);
     tree->SetBranchAddress("neutronHitE", &t_neutronHitE);
     tree->SetBranchAddress("neutronTrueE", &t_neutronTrueE);
+    tree->SetBranchAddress("neutronCubeE", &t_neutronCubeE);
+    tree->SetBranchAddress("neutronHitSmearT", &t_neutronHitSmearT);
     tree->SetBranchAddress("vtx", &t_vtx);
     tree->SetBranchAddress("vtxTime", &t_vtxTime);
     tree->SetBranchAddress("nFS", &t_nFS);
@@ -306,6 +320,9 @@ void analyze(string file)
     tree->SetBranchAddress("gammaParentPDG", &t_gammaParentPDG);
     tree->SetBranchAddress("gammaHitE", &t_gammaHitE);
     tree->SetBranchAddress("gammaTrueE", &t_gammaTrueE);
+    tree->SetBranchAddress("gammaCubeE", &t_gammaCubeE);
+    tree->SetBranchAddress("gammaHitT", &t_gammaHitT);
+    tree->SetBranchAddress("gammaHitSmearT", &t_gammaHitSmearT);
 
     int nevents = tree->GetEntries();
 
@@ -411,6 +428,7 @@ void analyze(string file)
                             earliest_neutron_hit.hit[1] = t_neutronHitY[n_neutronHit];
                             earliest_neutron_hit.hit[2] = t_neutronHitZ[n_neutronHit];
                             earliest_neutron_hit.trueT = t_neutronHitT[n_neutronHit];
+                            earliest_neutron_hit.CubeE = t_neutronCubeE[n_neutronHit];
 
                             earliest_neutron_hit.startingPoint[0] = t_neutronStartingPointX[n_neutronHit];
                             earliest_neutron_hit.startingPoint[1] = t_neutronStartingPointY[n_neutronHit];
@@ -481,6 +499,7 @@ void analyze(string file)
                             earliest_gamma_hit.hit[1] = t_gammaHitY[n_gammaHit];
                             earliest_gamma_hit.hit[2] = t_gammaHitZ[n_gammaHit];
                             earliest_gamma_hit.trueT = t_gammaHitT[n_gammaHit];
+                            earliest_gamma_hit.CubeE = t_gammaCubeE[n_gammaHit];
 
                             earliest_gamma_hit.startingPoint[0] = t_gammaStartingPointX[n_gammaHit];
                             earliest_gamma_hit.startingPoint[1] = t_gammaStartingPointY[n_gammaHit];
@@ -499,7 +518,7 @@ void analyze(string file)
                                 earliest_gamma_hit.isFromProton = 1;
                             else
                                 earliest_gamma_hit.isFromProton = 0;
-                            earliest_gamma_hit.isNeutron = 0;
+                            earliest_gamma_hit.isGamma = 1;
                         }
                     }
                 }
@@ -512,6 +531,14 @@ void analyze(string file)
             if(earliest_neutron_hit.isEmpty == false && temp_earliest_time_for_gamma > temp_earliest_time)
             {
                 earliest_hit = earliest_neutron_hit;
+            }
+
+            if(earliest_hit.isGamma)
+            {
+                if(earliest_gamma_hit.parentId == 0 || earliest_gamma_hit.parentId == -1)
+                    num_primary_gamma += 1;
+                if(earliest_gamma_hit.parentId > 0)
+                    num_secondary_gamma += 1;
             }
 
             if(earliest_hit.isEmpty == false)
@@ -574,7 +601,7 @@ void analyze(string file)
                         }
 
                         //background
-                        if(!earliest_hit.isNeutron)
+                        if(earliest_hit.isGamma)
                         {
                             hist_bkg_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
@@ -675,7 +702,7 @@ void analyze(string file)
                             }
                         }
                         //background
-                        if(!earliest_hit.isNeutron)
+                        if(earliest_hit.isGamma)
                         {
                             hist_bkg_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                             hist_bkg_1_gamma_arm_vs_time->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
@@ -759,12 +786,12 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 1000;
+    filenum = 100;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma.root",i));
+        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
         //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD%d/RHC_%d_test.root",j,i));
     }
 
@@ -790,6 +817,9 @@ void gamma()
     double purity = hist_sig_ang_vs_dis_linear_cut->GetEntries()/(hist_sig_ang_vs_dis_linear_cut->GetEntries()+hist_bkg_1_gamma_ang_vs_dis_linear_cut->GetEntries());
     cout<<"purity: "<<purity<<endl;
     cout<<"efficiency :"<<efficiency<<endl;
+
+    cout<<"num_primary_gamma: "<<num_primary_gamma<<endl;
+    cout<<"num_secondary_gamma: "<<num_secondary_gamma<<endl;
 
 
     TFile a(TString::Format("purity_%f",purity),"RECREATE");
