@@ -81,7 +81,7 @@ TH1F * distance_vtx_to_deathpoint = new TH1F("distance_vtx_to_deathpoint","dista
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
-float energyHitCut = 0; //energy deposit threshold for cube
+float energyHitCut = 2.5; //energy deposit threshold for cube
 
 int number_of_CC = 0;
 int number_of_secondary_pion = 0;
@@ -600,7 +600,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -609,7 +610,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -632,7 +634,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -644,7 +647,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -706,7 +710,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -715,7 +720,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -737,7 +743,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -749,7 +756,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    if(earliest_hit.CubeE != 0)
+                                        energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -811,8 +819,8 @@ void gamma()
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
-        analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
     }
 
     cout<<endl;
