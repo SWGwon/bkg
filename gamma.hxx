@@ -81,6 +81,8 @@ TH1F * distance_vtx_to_deathpoint = new TH1F("distance_vtx_to_deathpoint","dista
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
+float energyHitCut = 0; //energy deposit threshold for cube
+
 int number_of_CC = 0;
 int number_of_secondary_pion = 0;
 int number_of_secondary_proton = 0;
@@ -89,15 +91,17 @@ int number_of_secondary_other = 0;
 
 //change this part to do slope, intercept test
 int cut_slope = 0;
-int cut_y_intercept = 10000;
+int cut_y_intercept = 0;
 //channel type
 int num_fspi = 1;   //number of fs charged pion
 int num_fsp = 0;    //number of fs proton
 
 int num_primary_gamma = 0;
 int num_secondary_gamma = 0;
+int num_gamma_from_pion = 0;
+int num_gamma_from_muon = 0;
 
-int iftest = 1;
+int iftest = 0;
 double test_cut_angle = 0.60;
 double test_cut_distance = 20;
 
@@ -194,7 +198,6 @@ T save(T x,TCanvas* can)
 }
 
 
-float energyHitCut = 0.5; //energy deposit threshold for cube
 
 int num_file = 0;
 int all_interaction = 0;
@@ -460,8 +463,6 @@ void analyze(string file)
             float temp_earliest_time_for_gamma = 1000000;
             for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
-                //if(t_gammaCubeE[n_gammaHit] > 0)
-                //cout<<"t : "<<t_gammaHitSmearT[n_gammaHit]<<", e: "<<t_gammaCubeE[n_gammaHit]<<endl;
                 if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
                 //if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
@@ -546,6 +547,10 @@ void analyze(string file)
                     num_primary_gamma += 1;
                 if(earliest_gamma_hit.parentId > 0)
                     num_secondary_gamma += 1;
+                if(abs(earliest_gamma_hit.parentPdg) == 211)
+                    num_gamma_from_pion += 1;
+                if(earliest_gamma_hit.parentPdg == 13)
+                    num_gamma_from_muon += 1;
             }
 
             if(earliest_hit.isEmpty == false)
@@ -835,6 +840,8 @@ void gamma()
 
     cout<<"num_primary_gamma: "<<num_primary_gamma<<endl;
     cout<<"num_secondary_gamma: "<<num_secondary_gamma<<endl;
+    cout<<"num_gamma_from_muon: "<<num_gamma_from_muon<<endl;
+    cout<<"num_gamma_from_pion: "<<num_gamma_from_pion<<endl;
 
 
     TFile a(TString::Format("purity_%f",purity),"RECREATE");
