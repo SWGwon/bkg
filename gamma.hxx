@@ -46,6 +46,8 @@
 
 using namespace std;
 //histograms{
+TH1F * energy_of_gamma = new TH1F("energy_of_gamma" , "energy of gamma;energy [MeV]",100,0,10);
+TH1F * energy_of_signal = new TH1F("energy_of_signal" , "energy of signal;energy [MeV]",100,0,10);
 TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "out3DST background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "NC background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
@@ -103,6 +105,7 @@ class Hit_t
 {
     public:
         float timeWindow,           // time windows of the hit
+              timeWindowSmear,      // smeared time window 
               timeSmear,        // smear time
               energyDeposit,        // energy deposited by the neutron
               trackLength,          // lever arm
@@ -381,7 +384,8 @@ void analyze(string file)
             float temp_earliest_time = 1000000;
             for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
-                if(t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
+                if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
+                //if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
                     temp_earliest_time = t_neutronHitT[n_neutronHit];
                     //look for a neutron hit in 3DST
@@ -456,7 +460,10 @@ void analyze(string file)
             float temp_earliest_time_for_gamma = 1000000;
             for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
-                if(t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
+                //if(t_gammaCubeE[n_gammaHit] > 0)
+                //cout<<"t : "<<t_gammaHitSmearT[n_gammaHit]<<", e: "<<t_gammaCubeE[n_gammaHit]<<endl;
+                if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
+                //if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
                     temp_earliest_time_for_gamma = t_gammaHitT[n_gammaHit];
                     if(abs(t_gammaHitX[n_gammaHit]) < 120 && 
@@ -588,6 +595,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -596,6 +604,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -618,6 +627,7 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -629,6 +639,7 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -690,6 +701,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -698,6 +710,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -719,6 +732,7 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                             if(iftest == 1)
@@ -730,6 +744,7 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
                                 }
                             }
                         }
@@ -791,8 +806,8 @@ void gamma()
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
-        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",j,i));
+        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
     }
 
     cout<<endl;
@@ -847,6 +862,16 @@ void gamma()
     distance_vtx_to_deathpoint->Draw();
     distance_vtx_to_deathpoint->Write();
     can->SaveAs("distance_vtx_to_deathpoint.pdf");
+    can->Clear();
+
+    energy_of_gamma->Draw();
+    energy_of_gamma->Write();
+    can->SaveAs("energy_of_gamma.pdf");
+    can->Clear();
+
+    energy_of_signal->Draw();
+    energy_of_signal->Write();
+    can->SaveAs("energy_of_signal.pdf");
     can->Clear();
 
     //lever arm vs time 
