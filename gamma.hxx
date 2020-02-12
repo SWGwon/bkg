@@ -46,8 +46,14 @@
 
 using namespace std;
 //histograms{
-TH1F * energy_of_gamma = new TH1F("energy_of_gamma" , "energy of gamma;energy [MeV]",100,0,10);
 TH1F * energy_of_signal = new TH1F("energy_of_signal" , "energy of signal;energy [MeV]",100,0,10);
+TH1F * energy_of_gamma = new TH1F("energy_of_gamma" , "energy of gamma;energy [MeV]",100,0,10);
+TH1F * energy_of_secondary = new TH1F("energy_of_secondary" , "energy of secondary;energy [MeV]",100,0,10);
+
+TH1F * beta_of_signal = new TH1F("beta_of_signal", "velocity/c of signal;beta", 10, 0, 1);
+TH1F * beta_of_gamma = new TH1F("beta_of_gamma", "velocity/c of gamma;beta", 10, 0, 1);
+TH1F * beta_of_secondary = new TH1F("beta_of_secondary", "velocity/c of secondary;beta", 10, 0, 1);
+
 TH2F * hist_bkg_out3DST = new TH2F("hist_bkg_out3DST", "out3DST background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 TH2F * hist_bkg_NC = new TH2F("hist_bkg_NC", "NC background;Lever Arm [cm]; Time [ns]", 20, 0, 200, 25, 0, 25);
 
@@ -100,10 +106,13 @@ int num_primary_gamma = 0;
 int num_secondary_gamma = 0;
 int num_gamma_from_pion = 0;
 int num_gamma_from_muon = 0;
+int num_gamma_from_other = 0;
 
 int iftest = 0;
 double test_cut_angle = 0.60;
 double test_cut_distance = 20;
+
+const double c_velocity = 29.9792458;
 
 class Hit_t 
 {
@@ -408,6 +417,7 @@ void analyze(string file)
 
                         //calculate signal window; time of flight
                         float signalWindow = t_neutronHitT[n_neutronHit] - t_vtxTime;
+                        float signalWindowSmear = t_neutronHitSmearT[n_neutronHit] - t_vtxTime;
 
                         //Fix a bug from edep-sim
                         if(signalWindow == 1)
@@ -416,6 +426,7 @@ void analyze(string file)
                         if(signalWindow > 0)
                         {
                             earliest_neutron_hit.timeWindow = signalWindow;
+                            earliest_neutron_hit.timeWindowSmear = signalWindowSmear;
                             earliest_neutron_hit.trackLength = trackLength;
                             earliest_neutron_hit.energyDeposit = t_neutronHitE[n_neutronHit];
 
@@ -480,6 +491,7 @@ void analyze(string file)
 
                         //calculate signal window; time of flight
                         float signalWindow = t_gammaHitT[n_gammaHit] - t_vtxTime;
+                        float signalWindowSmear = t_gammaHitSmearT[n_gammaHit] - t_vtxTime;
 
                         //Fix a bug from edep-sim
                         if(signalWindow == 1)
@@ -488,6 +500,7 @@ void analyze(string file)
                         if(signalWindow > 0)
                         {
                             earliest_gamma_hit.timeWindow = signalWindow;
+                            earliest_neutron_hit.timeWindowSmear = signalWindowSmear;
                             earliest_gamma_hit.trackLength = trackLength;
                             earliest_gamma_hit.energyDeposit = t_gammaHitE[n_gammaHit];
 
@@ -547,13 +560,16 @@ void analyze(string file)
                     num_primary_gamma += 1;
                 if(earliest_gamma_hit.parentId > 0)
                     num_secondary_gamma += 1;
+
                 if(abs(earliest_gamma_hit.parentPdg) == 211)
                     num_gamma_from_pion += 1;
-                if(earliest_gamma_hit.parentPdg == 13)
+                else if(earliest_gamma_hit.parentPdg == 13)
                     num_gamma_from_muon += 1;
+                else
+                    num_gamma_from_other += 1;
             }
 
-            if(earliest_hit.isEmpty == false)
+            if(earliest_hit.isEmpty == false && earliest_hit.CubeE != 0)
             {
                 if(earliest_hit.parentId > 0)
                 {
@@ -600,8 +616,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_signal->Fill(earliest_hit.CubeE);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                             if(iftest == 1)
@@ -610,8 +626,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_signal->Fill(earliest_hit.CubeE);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                         }
@@ -634,8 +650,10 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                                    beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                             if(iftest == 1)
@@ -647,8 +665,10 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                                    beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                         }
@@ -674,6 +694,8 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
                                     if(iftest == 1)
@@ -685,6 +707,8 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
+                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
                                 }
@@ -710,8 +734,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_signal->Fill(earliest_hit.CubeE);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                             if(iftest == 1)
@@ -720,8 +744,8 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_signal->Fill(earliest_hit.CubeE);
+                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                         }
@@ -743,8 +767,10 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                                    beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                             if(iftest == 1)
@@ -756,8 +782,10 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    if(earliest_hit.CubeE != 0)
-                                        energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                                    beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
                         }
@@ -783,6 +811,8 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
                                     if(iftest == 1)
@@ -794,6 +824,8 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
+                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
                                 }
@@ -874,11 +906,41 @@ void gamma()
     can->SaveAs("4plots.pdf");
     can->Clear();
 
-    distance_vtx_to_deathpoint->Draw();
-    distance_vtx_to_deathpoint->Write();
-    can->SaveAs("distance_vtx_to_deathpoint.pdf");
+    //beta
+    //{
+    beta_of_signal->Draw();
+    beta_of_signal->Write();
+    can->SaveAs("beta_of_signal.pdf");
     can->Clear();
 
+    beta_of_gamma->Draw();
+    beta_of_gamma->Write();
+    can->SaveAs("beta_of_gamma.pdf");
+    can->Clear();
+
+    beta_of_secondary->Draw();
+    beta_of_secondary->Write();
+    can->SaveAs("beta_of_secondary.pdf");
+    can->Clear();
+
+    beta_of_signal->SetStats(0);
+    beta_of_gamma->SetStats(0);
+    beta_of_secondary->SetStats(0);
+    beta_of_signal->Scale(1/beta_of_signal->GetEntries(),"nosw2");
+    beta_of_gamma->Scale(1/beta_of_gamma->GetEntries(),"nosw2");
+    beta_of_secondary->Scale(1/beta_of_secondary->GetEntries(),"nosw2");
+    beta_of_signal->SetLineColor(6);
+    beta_of_gamma->SetLineColor(8);
+    beta_of_secondary->SetLineColor(4);
+    beta_of_signal->Draw();
+    beta_of_gamma->Draw("same");
+    beta_of_secondary->Draw("same");
+    can->SaveAs("all_beta.pdf");
+    can->Clear();
+    //}
+    
+    //1D energy
+    //{
     energy_of_gamma->Draw();
     energy_of_gamma->Write();
     can->SaveAs("energy_of_gamma.pdf");
@@ -887,6 +949,18 @@ void gamma()
     energy_of_signal->Draw();
     energy_of_signal->Write();
     can->SaveAs("energy_of_signal.pdf");
+    can->Clear();
+
+    energy_of_secondary->Draw();
+    energy_of_secondary->Write();
+    can->SaveAs("energy_of_secondary.pdf");
+    can->Clear();
+    //}
+
+
+    distance_vtx_to_deathpoint->Draw();
+    distance_vtx_to_deathpoint->Write();
+    can->SaveAs("distance_vtx_to_deathpoint.pdf");
     can->Clear();
 
     //lever arm vs time 
