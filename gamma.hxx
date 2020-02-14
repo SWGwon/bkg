@@ -50,6 +50,16 @@ TH1F * energy_of_signal = new TH1F("energy_of_signal" , "energy of signal;energy
 TH1F * energy_of_gamma = new TH1F("energy_of_gamma" , "energy of gamma;energy [MeV]",100,0,10);
 TH1F * energy_of_secondary = new TH1F("energy_of_secondary" , "energy of secondary;energy [MeV]",100,0,10);
 
+TH1F * gammaPDG = new TH1F("gammaPDG", "PDG", 5000, -2500, 2500);
+TH1F * num_of_primary_gamma = new TH1F;
+TH1F * num_of_other_gamma = new TH1F;
+
+TH1F * hitPDG_signal_big = new TH1F("","",3000,-500,2500);
+TH1F * hitPDG_signal_small = new TH1F("","",3000,-500,2500);
+
+TH2F * hitPDG = new TH2F("","",3000,-500,2500,500,0,15);
+
+
 TH1F * beta_of_signal = new TH1F("beta_of_signal", "velocity/c of signal;beta", 10, 0, 1);
 TH1F * beta_of_gamma = new TH1F("beta_of_gamma", "velocity/c of gamma;beta", 10, 0, 1);
 TH1F * beta_of_secondary = new TH1F("beta_of_secondary", "velocity/c of secondary;beta", 10, 0, 1);
@@ -87,7 +97,7 @@ TH1F * distance_vtx_to_deathpoint = new TH1F("distance_vtx_to_deathpoint","dista
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
-float energyHitCut = 2.5; //energy deposit threshold for cube
+float energyHitCut = 0.1; //energy deposit threshold for cube
 
 int number_of_CC = 0;
 int number_of_secondary_pion = 0;
@@ -99,8 +109,8 @@ int number_of_secondary_other = 0;
 int cut_slope = 0;
 int cut_y_intercept = 0;
 //channel type
-int num_fspi = 1;   //number of fs charged pion
-int num_fsp = 0;    //number of fs proton
+int num_fspi = 0;   //number of fs charged pion
+int num_fsp = 1;    //number of fs proton
 
 int num_primary_gamma = 0;
 int num_secondary_gamma = 0;
@@ -109,7 +119,7 @@ int num_gamma_from_muon = 0;
 int num_gamma_from_other = 0;
 
 int iftest = 0;
-double test_cut_angle = 0.60;
+double test_cut_angle = 0.95;
 double test_cut_distance = 20;
 
 const double c_velocity = 29.9792458;
@@ -129,6 +139,7 @@ class Hit_t
               trueE,    //neutron true energy
               CubeE,    //neutron cube energy
               trueT,    //neutron true time
+              hitPDG,    //hit PDG
               piDeath[3],      //pion death
               protonDeath[3];      //proton Death
 
@@ -160,6 +171,7 @@ class Hit_t
             trueE(0), 
             CubeE(0),
             trueT(0), 
+            hitPDG(0),
             bkgLoc(125124123),        
             parentId(123124123),
             parentPdg(123123123),
@@ -206,43 +218,6 @@ T save(T x,TCanvas* can)
     can->Clear();
 }
 
-
-
-int num_file = 0;
-int all_interaction = 0;
-
-void num_interaction(string file)
-{
-    auto _file = new TFile(TString(file));
-    auto tree = (TTree*)_file->Get("tree");
-
-    if(tree == NULL)
-    {
-        _file->Close();
-        return;
-    }
-    else
-    {
-        num_file++;
-    }
-
-    float t_vtx[3], t_vtxTime;
-    int nevents = tree->GetEntries();
-    tree->SetBranchAddress("vtx", &t_vtx);
-
-    for(int event = 0; event < nevents; event++)
-    {
-        tree->GetEntry(event);
-
-        if(abs(t_vtx[0]) < 120 && abs(t_vtx[1]) < 120 && abs(t_vtx[2]) < 100)
-        {
-            all_interaction++;
-        }
-    }
-    _file->Close();
-    delete _file;
-}
-
 //a, b are vector
 double GetAngle(float a[], float b[])
 {
@@ -285,6 +260,7 @@ void analyze(string file)
     float t_neutronHitE[1000], t_neutronTrueE[1000];
     float t_neutronCubeE[1000];
     float t_neutronHitSmearT[1000];
+    float t_neutronHitPDG[1000];
 
     float t_vtx[3], t_vtxTime;
     float t_piDeath[3], t_protonDeath[3];
@@ -300,6 +276,7 @@ void analyze(string file)
     float t_gammaHitE[1000], t_gammaTrueE[1000];
     float t_gammaCubeE[1000];
     float t_gammaHitSmearT[1000];
+    float t_gammaHitPDG[1000];
 
     int PDG = 0;
     int t_nFS, t_fsPdg[1000];
@@ -317,6 +294,7 @@ void analyze(string file)
     tree->SetBranchAddress("neutronTrueE", &t_neutronTrueE);
     tree->SetBranchAddress("neutronCubeE", &t_neutronCubeE);
     tree->SetBranchAddress("neutronHitSmearT", &t_neutronHitSmearT);
+    tree->SetBranchAddress("neutronHitPDG", &t_neutronHitPDG);
     tree->SetBranchAddress("vtx", &t_vtx);
     tree->SetBranchAddress("vtxTime", &t_vtxTime);
     tree->SetBranchAddress("nFS", &t_nFS);
@@ -338,6 +316,7 @@ void analyze(string file)
     tree->SetBranchAddress("gammaCubeE", &t_gammaCubeE);
     tree->SetBranchAddress("gammaHitT", &t_gammaHitT);
     tree->SetBranchAddress("gammaHitSmearT", &t_gammaHitSmearT);
+    tree->SetBranchAddress("gammaHitPDG", &t_gammaHitPDG);
 
     int nevents = tree->GetEntries();
 
@@ -396,8 +375,8 @@ void analyze(string file)
             float temp_earliest_time = 1000000;
             for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
-                if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
-                //if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
+                //if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
+                if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
                     temp_earliest_time = t_neutronHitT[n_neutronHit];
                     //look for a neutron hit in 3DST
@@ -454,6 +433,7 @@ void analyze(string file)
 
                             earliest_neutron_hit.parentId = t_neutronParentId[n_neutronHit];
                             earliest_neutron_hit.parentPdg = t_neutronParentPDG[n_neutronHit];
+                            earliest_neutron_hit.hitPDG = t_neutronHitPDG[n_neutronHit];
 
                             earliest_neutron_hit.vtxTime = t_vtxTime;
                             earliest_neutron_hit.isEmpty = 0;
@@ -474,8 +454,8 @@ void analyze(string file)
             float temp_earliest_time_for_gamma = 1000000;
             for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
-                if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
-                //if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
+                //if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
+                if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
                     temp_earliest_time_for_gamma = t_gammaHitT[n_gammaHit];
                     if(abs(t_gammaHitX[n_gammaHit]) < 120 && 
@@ -528,6 +508,7 @@ void analyze(string file)
 
                             earliest_gamma_hit.parentId = t_gammaParentId[n_gammaHit];
                             earliest_gamma_hit.parentPdg = t_gammaParentPDG[n_gammaHit];
+                            earliest_gamma_hit.hitPDG = t_gammaHitPDG[n_gammaHit];
 
                             earliest_gamma_hit.vtxTime = t_vtxTime;
                             earliest_gamma_hit.isEmpty = 0;
@@ -548,18 +529,45 @@ void analyze(string file)
             if(earliest_gamma_hit.isEmpty == false && temp_earliest_time_for_gamma < temp_earliest_time)
             {
                 earliest_hit = earliest_gamma_hit;
+                //energy_of_gamma->Fill(earliest_hit.CubeE);
+                energy_of_gamma->Fill(earliest_hit.energyDeposit);
             }
             if(earliest_neutron_hit.isEmpty == false && temp_earliest_time_for_gamma > temp_earliest_time)
             {
                 earliest_hit = earliest_neutron_hit;
+
+                if(earliest_hit.parentId == -1 || earliest_hit.parentId == 0)
+                {
+                    //energy_of_signal->Fill(earliest_hit.CubeE);
+                    energy_of_signal->Fill(earliest_hit.energyDeposit);
+                    //if(earliest_hit.CubeE > 1.5 && earliest_hit.CubeE < 2.2)
+                    //    hitPDG_signal_big->Fill(earliest_hit.hitPDG);
+                    //if(earliest_hit.CubeE < 0.8)
+                    //    hitPDG_signal_small->Fill(earliest_hit.hitPDG);
+                    if(earliest_hit.energyDeposit > 1.5 && earliest_hit.energyDeposit < 2.2)
+                        hitPDG_signal_big->Fill(earliest_hit.hitPDG);
+                    if(earliest_hit.energyDeposit < 0.8)
+                        hitPDG_signal_small->Fill(earliest_hit.hitPDG);
+                    hitPDG->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
+                }
+                else
+                    //energy_of_secondary->Fill(earliest_hit.CubeE);
+                    energy_of_secondary->Fill(earliest_hit.energyDeposit);
             }
 
             if(earliest_hit.isGamma)
             {
+                gammaPDG->Fill(earliest_hit.parentPdg);
                 if(earliest_gamma_hit.parentId == 0 || earliest_gamma_hit.parentId == -1)
+                {
                     num_primary_gamma += 1;
+                    num_of_primary_gamma->Fill(0);
+                }
                 if(earliest_gamma_hit.parentId > 0)
+                {
                     num_secondary_gamma += 1;
+                    num_of_other_gamma->Fill(0);
+                }
 
                 if(abs(earliest_gamma_hit.parentPdg) == 211)
                     num_gamma_from_pion += 1;
@@ -616,7 +624,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    //energy_of_signal->Fill(earliest_hit.CubeE);
                                     beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
@@ -626,7 +634,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    //energy_of_signal->Fill(earliest_hit.CubeE);
                                     beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
@@ -650,8 +658,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
-                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    //energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    //energy_of_secondary->Fill(earliest_hit.CubeE);
                                     beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                     beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
@@ -665,8 +673,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
-                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    //energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    //energy_of_secondary->Fill(earliest_hit.CubeE);
                                     beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                     beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
@@ -694,7 +702,7 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            //energy_of_secondary->Fill(earliest_hit.CubeE);
                                             beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
@@ -707,7 +715,7 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_piDeath_to_hit,vec_vtx_to_piDeath),earliest_hit.trackLength);
-                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            //energy_of_secondary->Fill(earliest_hit.CubeE);
                                             beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
@@ -734,7 +742,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    //energy_of_signal->Fill(earliest_hit.CubeE);
                                     beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
@@ -744,7 +752,7 @@ void analyze(string file)
                                 {
                                     hist_sig_arm_vs_time_linear_cut->Fill(earliest_hit.trackLength,earliest_hit.timeWindow);
                                     hist_sig_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_signal->Fill(earliest_hit.CubeE);
+                                    //energy_of_signal->Fill(earliest_hit.CubeE);
                                     beta_of_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
                             }
@@ -767,8 +775,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
-                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    //energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    //energy_of_secondary->Fill(earliest_hit.CubeE);
                                     beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                     beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
@@ -782,8 +790,8 @@ void analyze(string file)
 
                                     hist_bkg_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                     hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                    energy_of_gamma->Fill(earliest_hit.CubeE);
-                                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                                    //energy_of_gamma->Fill(earliest_hit.CubeE);
+                                    //energy_of_secondary->Fill(earliest_hit.CubeE);
                                     beta_of_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                     beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                 }
@@ -811,7 +819,7 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            //energy_of_secondary->Fill(earliest_hit.CubeE);
                                             beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
@@ -824,7 +832,7 @@ void analyze(string file)
 
                                             hist_bkg_1_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
                                             hist_bkg_1_gamma_ang_vs_dis_linear_cut->Fill(GetAngle(vec_protonDeath_to_hit,vec_vtx_to_protonDeath),earliest_hit.trackLength);
-                                            energy_of_secondary->Fill(earliest_hit.CubeE);
+                                            //energy_of_secondary->Fill(earliest_hit.CubeE);
                                             beta_of_secondary->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
                                         }
                                     }
@@ -846,7 +854,7 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 100;
+    filenum = 300;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
@@ -882,14 +890,14 @@ void gamma()
     cout<<"num_secondary_gamma: "<<num_secondary_gamma<<endl;
     cout<<"num_gamma_from_muon: "<<num_gamma_from_muon<<endl;
     cout<<"num_gamma_from_pion: "<<num_gamma_from_pion<<endl;
-
-
+    
     TFile a(TString::Format("purity_%f",purity),"RECREATE");
     a.Close();
     TFile b(TString::Format("efficiency_%f",efficiency),"RECREATE");
     b.Close();
     TFile c(TString::Format("p*e_%f",purity*efficiency),"RECREATE");
     c.Close();
+
 
     TFile * fi1 = new TFile("background.root","RECREATE");
 
@@ -904,6 +912,37 @@ void gamma()
     can->cd(4);
     hist_bkg_1_arm_vs_time->Draw("colz");
     can->SaveAs("4plots.pdf");
+    can->Clear();
+
+
+    hitPDG_signal_small->Draw();
+    hitPDG_signal_small->SetStats(0);
+    hitPDG_signal_small->Scale(1/hitPDG_signal_small->GetEntries(),"nosw2");
+    hitPDG_signal_small->Write();
+    can->SaveAs("hitPDG_signal_small.pdf");
+    can->Clear();
+
+    cout<<"debug2"<<endl;
+    hitPDG_signal_big->Draw();
+    hitPDG_signal_big->SetStats(0);
+    hitPDG_signal_big->Scale(1/hitPDG_signal_big->GetEntries(),"nosw2");
+    hitPDG_signal_big->Write();
+    can->SaveAs("hitPDG_signal_big.pdf");
+    can->Clear();
+
+    gammaPDG->Draw();
+    gammaPDG->Write();
+    can->SaveAs("gammaPDG.pdf");
+    can->Clear();
+
+    num_of_primary_gamma->Draw();
+    num_of_primary_gamma->Write();
+    can->SaveAs("num_of_primary_gamma.pdf");
+    can->Clear();
+
+    num_of_other_gamma->Draw();
+    num_of_other_gamma->Write();
+    can->SaveAs("num_of_other_gamma.pdf");
     can->Clear();
 
     //beta
@@ -929,9 +968,9 @@ void gamma()
     beta_of_signal->Scale(1/beta_of_signal->GetEntries(),"nosw2");
     beta_of_gamma->Scale(1/beta_of_gamma->GetEntries(),"nosw2");
     beta_of_secondary->Scale(1/beta_of_secondary->GetEntries(),"nosw2");
-    beta_of_signal->SetLineColor(6);
-    beta_of_gamma->SetLineColor(8);
-    beta_of_secondary->SetLineColor(4);
+    beta_of_signal->SetLineColor(6);        //purple
+    beta_of_gamma->SetLineColor(8);     //green
+    beta_of_secondary->SetLineColor(4);     //blue
     beta_of_signal->Draw();
     beta_of_gamma->Draw("same");
     beta_of_secondary->Draw("same");
@@ -954,6 +993,21 @@ void gamma()
     energy_of_secondary->Draw();
     energy_of_secondary->Write();
     can->SaveAs("energy_of_secondary.pdf");
+    can->Clear();
+
+    energy_of_gamma->Scale(1/energy_of_gamma->GetEntries(),"nosw2");
+    energy_of_gamma->SetStats(0);
+    energy_of_gamma->SetLineColor(8);
+    energy_of_gamma->Draw();
+    energy_of_secondary->Scale(1/energy_of_secondary->GetEntries(),"nosw2");
+    energy_of_secondary->SetStats(0);
+    energy_of_secondary->SetLineColor(4);
+    energy_of_secondary->Draw("same");
+    energy_of_signal->Scale(1/energy_of_signal->GetEntries(),"nosw2");
+    energy_of_signal->SetStats(0);
+    energy_of_signal->SetLineColor(6);
+    energy_of_signal->Draw("same");
+    can->SaveAs("all_energy.pdf");
     can->Clear();
     //}
 
@@ -1170,6 +1224,7 @@ void gamma()
     can->SaveAs("purity_1_gamma_linear_cut.pdf");
     can->Clear();
 
+    cout<<"debug3"<<endl;
     TH2F * purity_1_gamma = (TH2F*)hist_sig_arm_vs_time->Clone();
     hist_bkg_1_gamma_arm_vs_time->Add(hist_sig_arm_vs_time);
     purity_1_gamma->Divide(hist_bkg_1_gamma_arm_vs_time);
@@ -1213,4 +1268,38 @@ void gamma()
     can->Clear();
 
     fi1->Close();
+
+
+    delete can;
+    delete fi1;
+    delete energy_of_signal; 
+    delete energy_of_gamma; 
+    delete energy_of_secondary; 
+    delete gammaPDG; 
+    delete num_of_primary_gamma; 
+    delete num_of_other_gamma; 
+    delete hitPDG_signal_big; 
+    delete hitPDG_signal_small; 
+    delete beta_of_signal; 
+    delete beta_of_gamma; 
+    delete beta_of_secondary; 
+    delete hist_bkg_out3DST; 
+    delete hist_bkg_NC; 
+    delete hist_sig_arm_vs_time; 
+    delete hist_bkg_1_arm_vs_time; 
+    delete hist_bkg_gamma_arm_vs_time; 
+    delete hist_bkg_1_gamma_arm_vs_time; 
+    delete hist_sig_arm_vs_time_linear_cut; 
+    delete hist_bkg_1_arm_vs_time_linear_cut; 
+    delete hist_bkg_gamma_arm_vs_time_linear_cut; 
+    delete hist_bkg_1_gamma_arm_vs_time_linear_cut; 
+    delete hist_sig_ang_vs_dis; 
+    delete hist_bkg_1_ang_vs_dis; 
+    delete hist_bkg_gamma_ang_vs_dis; 
+    delete hist_bkg_1_gamma_ang_vs_dis; 
+    delete hist_sig_ang_vs_dis_linear_cut; 
+    delete hist_bkg_gamma_ang_vs_dis_linear_cut; 
+    delete hist_bkg_1_ang_vs_dis_linear_cut; 
+    delete hist_bkg_1_gamma_ang_vs_dis_linear_cut; 
+    delete distance_vtx_to_deathpoint; 
 }
