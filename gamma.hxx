@@ -57,7 +57,9 @@ TH1F * num_of_other_gamma = new TH1F;
 TH1F * hitPDG_signal_big = new TH1F("","",3000,-500,2500);
 TH1F * hitPDG_signal_small = new TH1F("","",3000,-500,2500);
 
-TH2F * hitPDG = new TH2F("","",3000,-500,2500,500,0,15);
+TH2F * hitPDG_signal = new TH2F("","",3000,-500,2500,500,0,15);
+TH2F * hitPDG_gamma = new TH2F("","",3000,-500,2500,500,0,15);
+TH2F * hitPDG_secondary = new TH2F("","",3000,-500,2500,500,0,15);
 
 
 TH1F * beta_of_signal = new TH1F("beta_of_signal", "velocity/c of signal;beta", 10, 0, 1);
@@ -375,8 +377,8 @@ void analyze(string file)
             float temp_earliest_time = 1000000;
             for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
-                //if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
-                if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
+                if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
+                //if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
                     temp_earliest_time = t_neutronHitT[n_neutronHit];
                     //look for a neutron hit in 3DST
@@ -454,8 +456,8 @@ void analyze(string file)
             float temp_earliest_time_for_gamma = 1000000;
             for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
-                //if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
-                if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
+                if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
+                //if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
                     temp_earliest_time_for_gamma = t_gammaHitT[n_gammaHit];
                     if(abs(t_gammaHitX[n_gammaHit]) < 120 && 
@@ -529,8 +531,11 @@ void analyze(string file)
             if(earliest_gamma_hit.isEmpty == false && temp_earliest_time_for_gamma < temp_earliest_time)
             {
                 earliest_hit = earliest_gamma_hit;
-                //energy_of_gamma->Fill(earliest_hit.CubeE);
-                energy_of_gamma->Fill(earliest_hit.energyDeposit);
+                energy_of_gamma->Fill(earliest_hit.CubeE);
+                hitPDG_gamma->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
+
+                //energy_of_gamma->Fill(earliest_hit.energyDeposit);
+                //hitPDG_gamma->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
             }
             if(earliest_neutron_hit.isEmpty == false && temp_earliest_time_for_gamma > temp_earliest_time)
             {
@@ -538,21 +543,29 @@ void analyze(string file)
 
                 if(earliest_hit.parentId == -1 || earliest_hit.parentId == 0)
                 {
-                    //energy_of_signal->Fill(earliest_hit.CubeE);
-                    energy_of_signal->Fill(earliest_hit.energyDeposit);
-                    //if(earliest_hit.CubeE > 1.5 && earliest_hit.CubeE < 2.2)
-                    //    hitPDG_signal_big->Fill(earliest_hit.hitPDG);
-                    //if(earliest_hit.CubeE < 0.8)
-                    //    hitPDG_signal_small->Fill(earliest_hit.hitPDG);
-                    if(earliest_hit.energyDeposit > 1.5 && earliest_hit.energyDeposit < 2.2)
+                    energy_of_signal->Fill(earliest_hit.CubeE);
+                    hitPDG_signal->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
+                    if(earliest_hit.CubeE > 1.5 && earliest_hit.CubeE < 2.2)
                         hitPDG_signal_big->Fill(earliest_hit.hitPDG);
-                    if(earliest_hit.energyDeposit < 0.8)
+                    if(earliest_hit.CubeE < 0.8)
                         hitPDG_signal_small->Fill(earliest_hit.hitPDG);
-                    hitPDG->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
+
+                    //energy_of_signal->Fill(earliest_hit.energyDeposit);
+                    //hitPDG_signal->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
+                    //if(earliest_hit.energyDeposit > 1.5 && earliest_hit.energyDeposit < 2.2)
+                    //    hitPDG_signal_big->Fill(earliest_hit.hitPDG);
+                    //if(earliest_hit.energyDeposit < 0.8)
+                    //    hitPDG_signal_small->Fill(earliest_hit.hitPDG);
                 }
                 else
-                    //energy_of_secondary->Fill(earliest_hit.CubeE);
-                    energy_of_secondary->Fill(earliest_hit.energyDeposit);
+                {
+                    energy_of_secondary->Fill(earliest_hit.CubeE);
+                    hitPDG_secondary->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
+
+                    //energy_of_secondary->Fill(earliest_hit.energyDeposit);
+                    //hitPDG_secondary->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
+
+                }
             }
 
             if(earliest_hit.isGamma)
@@ -928,6 +941,21 @@ void gamma()
     hitPDG_signal_big->Scale(1/hitPDG_signal_big->GetEntries(),"nosw2");
     hitPDG_signal_big->Write();
     can->SaveAs("hitPDG_signal_big.pdf");
+    can->Clear();
+
+    hitPDG_gamma->Draw("colz");
+    hitPDG_gamma->Write();
+    can->SaveAs("hitPDG_gamma.pdf");
+    can->Clear();
+
+    hitPDG_signal->Draw("colz");
+    hitPDG_signal->Write();
+    can->SaveAs("hitPDG_signal.pdf");
+    can->Clear();
+
+    hitPDG_secondary->Draw("colz");
+    hitPDG_secondary->Write();
+    can->SaveAs("hitPDG_secondary.pdf");
     can->Clear();
 
     gammaPDG->Draw();
