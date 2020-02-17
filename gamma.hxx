@@ -57,9 +57,9 @@ TH1F * num_of_other_gamma = new TH1F;
 TH1F * hitPDG_signal_big = new TH1F("","",3000,-500,2500);
 TH1F * hitPDG_signal_small = new TH1F("","",3000,-500,2500);
 
-TH2F * hitPDG_signal = new TH2F("","",3000,-500,2500,500,0,15);
-TH2F * hitPDG_gamma = new TH2F("","",3000,-500,2500,500,0,15);
-TH2F * hitPDG_secondary = new TH2F("","",3000,-500,2500,500,0,15);
+TH1F * hitPDG_signal = new TH1F("","",3000,-500,2500);
+TH1F * hitPDG_gamma = new TH1F("","",3000,-500,2500);
+TH1F * hitPDG_secondary = new TH1F("","",3000,-500,2500);
 
 
 TH1F * beta_of_signal = new TH1F("beta_of_signal", "velocity/c of signal;beta", 10, 0, 1);
@@ -377,7 +377,7 @@ void analyze(string file)
             float temp_earliest_time = 1000000;
             for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
             {
-                if(t_neutronHitSmearT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitSmearT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
+                if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronCubeE[n_neutronHit] > energyHitCut)
                 //if(t_neutronHitT[n_neutronHit] != 0 && t_neutronHitX[n_neutronHit] != 0 && t_neutronHitT[n_neutronHit] < temp_earliest_time && t_neutronHitE[n_neutronHit] > energyHitCut)
                 {
                     temp_earliest_time = t_neutronHitT[n_neutronHit];
@@ -456,7 +456,7 @@ void analyze(string file)
             float temp_earliest_time_for_gamma = 1000000;
             for(int n_gammaHit = 0; n_gammaHit < 1000; n_gammaHit++)
             {
-                if(t_gammaHitSmearT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitSmearT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
+                if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaCubeE[n_gammaHit] > energyHitCut)
                 //if(t_gammaHitT[n_gammaHit] != 0 && t_gammaHitX[n_gammaHit] != 0 && t_gammaHitT[n_gammaHit] < temp_earliest_time_for_gamma && t_gammaHitE[n_gammaHit] > energyHitCut)
                 {
                     temp_earliest_time_for_gamma = t_gammaHitT[n_gammaHit];
@@ -531,11 +531,12 @@ void analyze(string file)
             if(earliest_gamma_hit.isEmpty == false && temp_earliest_time_for_gamma < temp_earliest_time)
             {
                 earliest_hit = earliest_gamma_hit;
-                energy_of_gamma->Fill(earliest_hit.CubeE);
-                hitPDG_gamma->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
 
+                energy_of_gamma->Fill(earliest_hit.CubeE);
                 //energy_of_gamma->Fill(earliest_hit.energyDeposit);
-                //hitPDG_gamma->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
+
+                hitPDG_gamma->Fill(earliest_hit.hitPDG);
+
             }
             if(earliest_neutron_hit.isEmpty == false && temp_earliest_time_for_gamma > temp_earliest_time)
             {
@@ -544,27 +545,16 @@ void analyze(string file)
                 if(earliest_hit.parentId == -1 || earliest_hit.parentId == 0)
                 {
                     energy_of_signal->Fill(earliest_hit.CubeE);
-                    hitPDG_signal->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
-                    if(earliest_hit.CubeE > 1.5 && earliest_hit.CubeE < 2.2)
-                        hitPDG_signal_big->Fill(earliest_hit.hitPDG);
-                    if(earliest_hit.CubeE < 0.8)
-                        hitPDG_signal_small->Fill(earliest_hit.hitPDG);
-
                     //energy_of_signal->Fill(earliest_hit.energyDeposit);
-                    //hitPDG_signal->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
-                    //if(earliest_hit.energyDeposit > 1.5 && earliest_hit.energyDeposit < 2.2)
-                    //    hitPDG_signal_big->Fill(earliest_hit.hitPDG);
-                    //if(earliest_hit.energyDeposit < 0.8)
-                    //    hitPDG_signal_small->Fill(earliest_hit.hitPDG);
+
+                    hitPDG_signal->Fill(earliest_hit.hitPDG);
                 }
                 else
                 {
                     energy_of_secondary->Fill(earliest_hit.CubeE);
-                    hitPDG_secondary->Fill(earliest_hit.hitPDG,earliest_hit.CubeE);
-
                     //energy_of_secondary->Fill(earliest_hit.energyDeposit);
-                    //hitPDG_secondary->Fill(earliest_hit.hitPDG,earliest_hit.energyDeposit);
 
+                    hitPDG_secondary->Fill(earliest_hit.hitPDG);
                 }
             }
 
@@ -867,13 +857,13 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 300;
+    filenum = 1000;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
-        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
     }
 
     cout<<endl;
@@ -912,6 +902,7 @@ void gamma()
     c.Close();
 
 
+
     TFile * fi1 = new TFile("background.root","RECREATE");
 
     TCanvas * can = new TCanvas;
@@ -927,33 +918,17 @@ void gamma()
     can->SaveAs("4plots.pdf");
     can->Clear();
 
-
-    hitPDG_signal_small->Draw();
-    hitPDG_signal_small->SetStats(0);
-    hitPDG_signal_small->Scale(1/hitPDG_signal_small->GetEntries(),"nosw2");
-    hitPDG_signal_small->Write();
-    can->SaveAs("hitPDG_signal_small.pdf");
-    can->Clear();
-
-    cout<<"debug2"<<endl;
-    hitPDG_signal_big->Draw();
-    hitPDG_signal_big->SetStats(0);
-    hitPDG_signal_big->Scale(1/hitPDG_signal_big->GetEntries(),"nosw2");
-    hitPDG_signal_big->Write();
-    can->SaveAs("hitPDG_signal_big.pdf");
-    can->Clear();
-
-    hitPDG_gamma->Draw("colz");
+    hitPDG_gamma->Draw();
     hitPDG_gamma->Write();
     can->SaveAs("hitPDG_gamma.pdf");
     can->Clear();
 
-    hitPDG_signal->Draw("colz");
+    hitPDG_signal->Draw();
     hitPDG_signal->Write();
     can->SaveAs("hitPDG_signal.pdf");
     can->Clear();
 
-    hitPDG_secondary->Draw("colz");
+    hitPDG_secondary->Draw();
     hitPDG_secondary->Write();
     can->SaveAs("hitPDG_secondary.pdf");
     can->Clear();
@@ -1252,7 +1227,6 @@ void gamma()
     can->SaveAs("purity_1_gamma_linear_cut.pdf");
     can->Clear();
 
-    cout<<"debug3"<<endl;
     TH2F * purity_1_gamma = (TH2F*)hist_sig_arm_vs_time->Clone();
     hist_bkg_1_gamma_arm_vs_time->Add(hist_sig_arm_vs_time);
     purity_1_gamma->Divide(hist_bkg_1_gamma_arm_vs_time);
@@ -1297,37 +1271,4 @@ void gamma()
 
     fi1->Close();
 
-
-    delete can;
-    delete fi1;
-    delete energy_of_signal; 
-    delete energy_of_gamma; 
-    delete energy_of_secondary; 
-    delete gammaPDG; 
-    delete num_of_primary_gamma; 
-    delete num_of_other_gamma; 
-    delete hitPDG_signal_big; 
-    delete hitPDG_signal_small; 
-    delete beta_of_signal; 
-    delete beta_of_gamma; 
-    delete beta_of_secondary; 
-    delete hist_bkg_out3DST; 
-    delete hist_bkg_NC; 
-    delete hist_sig_arm_vs_time; 
-    delete hist_bkg_1_arm_vs_time; 
-    delete hist_bkg_gamma_arm_vs_time; 
-    delete hist_bkg_1_gamma_arm_vs_time; 
-    delete hist_sig_arm_vs_time_linear_cut; 
-    delete hist_bkg_1_arm_vs_time_linear_cut; 
-    delete hist_bkg_gamma_arm_vs_time_linear_cut; 
-    delete hist_bkg_1_gamma_arm_vs_time_linear_cut; 
-    delete hist_sig_ang_vs_dis; 
-    delete hist_bkg_1_ang_vs_dis; 
-    delete hist_bkg_gamma_ang_vs_dis; 
-    delete hist_bkg_1_gamma_ang_vs_dis; 
-    delete hist_sig_ang_vs_dis_linear_cut; 
-    delete hist_bkg_gamma_ang_vs_dis_linear_cut; 
-    delete hist_bkg_1_ang_vs_dis_linear_cut; 
-    delete hist_bkg_1_gamma_ang_vs_dis_linear_cut; 
-    delete distance_vtx_to_deathpoint; 
 }
