@@ -100,6 +100,7 @@ bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
 float energyHitCut = 0.1; //energy deposit threshold for cube
+bool isCubeE = 1;
 
 int number_of_CC = 0;
 int number_of_secondary_pion = 0;
@@ -109,10 +110,11 @@ int number_of_secondary_other = 0;
 
 //change this part to do slope, intercept test
 int cut_slope = 0;
-int cut_y_intercept = 0;
+int cut_y_intercept = 100000;
 //channel type
 int num_fspi = 0;   //number of fs charged pion
 int num_fsp = 1;    //number of fs proton
+
 
 int num_primary_gamma = 0;
 int num_secondary_gamma = 0;
@@ -120,9 +122,9 @@ int num_gamma_from_pion = 0;
 int num_gamma_from_muon = 0;
 int num_gamma_from_other = 0;
 
-int iftest = 0;
-double test_cut_angle = 0.95;
-double test_cut_distance = 20;
+int iftest = 1;
+double test_cut_angle = 0;
+double test_cut_distance = 1000;
 
 const double c_velocity = 29.9792458;
 
@@ -532,8 +534,10 @@ void analyze(string file)
             {
                 earliest_hit = earliest_gamma_hit;
 
-                energy_of_gamma->Fill(earliest_hit.CubeE);
-                //energy_of_gamma->Fill(earliest_hit.energyDeposit);
+                if(isCubeE)
+                    energy_of_gamma->Fill(earliest_hit.CubeE);
+                if(!isCubeE)
+                    energy_of_gamma->Fill(earliest_hit.energyDeposit);
 
                 hitPDG_gamma->Fill(earliest_hit.hitPDG);
 
@@ -544,15 +548,19 @@ void analyze(string file)
 
                 if(earliest_hit.parentId == -1 || earliest_hit.parentId == 0)
                 {
-                    energy_of_signal->Fill(earliest_hit.CubeE);
-                    //energy_of_signal->Fill(earliest_hit.energyDeposit);
+                    if(isCubeE)
+                        energy_of_signal->Fill(earliest_hit.CubeE);
+                    if(!isCubeE)
+                        energy_of_signal->Fill(earliest_hit.energyDeposit);
 
                     hitPDG_signal->Fill(earliest_hit.hitPDG);
                 }
                 else
                 {
-                    energy_of_secondary->Fill(earliest_hit.CubeE);
-                    //energy_of_secondary->Fill(earliest_hit.energyDeposit);
+                    if(isCubeE)
+                        energy_of_secondary->Fill(earliest_hit.CubeE);
+                    if(!isCubeE)
+                        energy_of_secondary->Fill(earliest_hit.energyDeposit);
 
                     hitPDG_secondary->Fill(earliest_hit.hitPDG);
                 }
@@ -857,13 +865,13 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 1000;
+    filenum = 100;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
-        analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
     }
 
     cout<<endl;
