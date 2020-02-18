@@ -99,7 +99,7 @@ TH1F * distance_vtx_to_deathpoint = new TH1F("distance_vtx_to_deathpoint","dista
 bool is_inFV = false;       //check if vertex is in FV
 bool is_in3DST = false;     //check if vertex is in 3DST
 
-float energyHitCut = 0.1; //energy deposit threshold for cube
+float energyHitCut = 3; //energy deposit threshold for cube
 bool isCubeE = 1;
 
 int number_of_CC = 0;
@@ -865,13 +865,13 @@ void gamma()
     
     //cout<<"filenum :"<<endl;
     //cin>>filenum;
-    filenum = 100;
+    filenum = 1000;
     cout<<"start"<<endl;
     for(int i = 2; i <filenum; i++) //test_1 is not
     {
         cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
-        //analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
+        analyze(Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
     }
 
     cout<<endl;
