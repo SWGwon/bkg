@@ -637,7 +637,7 @@ void analyze(string file)
                 vtx_time->Fill(earliest_hit.vtxTime);
                 if(earliest_hit.parentId == -1 || earliest_hit.parentId == 0)
                     startingT_primary->Fill(earliest_hit.startingPointT);
-                if(earliest_hit.parentId > )
+                if(earliest_hit.parentId > 0)
                     startingT_secondary->Fill(earliest_hit.startingPointT);
                 gammaPDG->Fill(earliest_hit.parentPdg);
                 if(earliest_gamma_hit.parentId == 0 || earliest_gamma_hit.parentId == -1)
