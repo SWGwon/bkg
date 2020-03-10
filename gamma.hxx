@@ -278,15 +278,14 @@ void gamma()
     TFile * outfile = new TFile("variables.root","RECREATE");
     TTree * output_tree = new TTree("output_tree","output_tree");
 
-    /*
     output_tree->Branch("leverArm",&leverArm, "lever arm");
     output_tree->Branch("angle",&angle, "angle between C and hit");
     output_tree->Branch("beta",&beta, "beta");
     output_tree->Branch("distanceCHit",&distanceCHit, "distance C and hit");
     output_tree->Branch("tof",&tof, "time of flight");
     output_tree->Branch("cubeE",&cubeE, "CubeE");
-    */
     output_tree->Branch("category", &category, "category");
+    /*
     output_tree->Branch("signalLeverArm", &signalLeverArm, "signalLeverArm");
     output_tree->Branch("signalAngle", &signalAngle, "signalAngle");
     output_tree->Branch("signalBeta", &signalBeta, "signalBeta");
@@ -311,6 +310,7 @@ void gamma()
     output_tree->Branch("secondaryGammaDistanceCHit", &secondaryGammaDistanceCHit, "secondaryGammaDistanceCHit");
     output_tree->Branch("secondaryGammaTOF", &secondaryGammaTOF, "secondaryGammaTOF");
     output_tree->Branch("secondaryGammaCubeE", &secondaryGammaCubeE, "secondaryGammaCubeE");
+    */
                                                                                 
     for(int i = 1; i != filenum; i++)
     {
@@ -711,6 +711,7 @@ void gamma()
                 vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.vtxSignal[i];
             }
             
+            /*
             ////pi case
             if(num_fspi == 1 && num_fsp ==0)
             {
@@ -868,9 +869,8 @@ void gamma()
                     secondaryGammaCubeE = earliest_hit.CubeE;
                 }
             }   //end of proton case
+            */
 
-
-            /*
             ////pi case
             if(num_fspi == 1 && num_fsp ==0)
             {
@@ -1028,7 +1028,6 @@ void gamma()
                     cubeE = earliest_hit.CubeE;
                 }
             }   //end of proton case
-            */
             category = earliest_hit.category;
             output_tree->Fill();
         }       //end of event iterate
