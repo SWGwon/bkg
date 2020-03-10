@@ -42,7 +42,6 @@
 #include "TSystem.h"
 #include <TError.h>
 
-
 float leverArm;
 float angle;
 float beta;
@@ -50,6 +49,31 @@ float distanceCHit;
 float tof;
 float cubeE;
 float category;
+
+float signalLeverArm;
+float signalAngle;
+float signalBeta;
+float signalDistanceCHit;
+float signalTOF;
+float signalCubeE;
+float secondaryNeutronLeverArm;
+float secondaryNeutronAngle;
+float secondaryNeutronBeta;
+float secondaryNeutronDistanceCHit;
+float secondaryNeutronTOF;
+float secondaryNeutronCubeE;
+float primaryGammaLeverArm;
+float primaryGammaAngle;
+float primaryGammaBeta;
+float primaryGammaDistanceCHit;
+float primaryGammaTOF;
+float primaryGammaCubeE;
+float secondaryGammaLeverArm;
+float secondaryGammaAngle;
+float secondaryGammaBeta;
+float secondaryGammaDistanceCHit;
+float secondaryGammaTOF;
+float secondaryGammaCubeE;
 
 int num_secondary_neutron = 0;
 int num_secondary_neutron_C_out3dst  = 0;
@@ -254,13 +278,39 @@ void gamma()
     TFile * outfile = new TFile("variables.root","RECREATE");
     TTree * output_tree = new TTree("output_tree","output_tree");
 
+    /*
     output_tree->Branch("leverArm",&leverArm, "lever arm");
     output_tree->Branch("angle",&angle, "angle between C and hit");
     output_tree->Branch("beta",&beta, "beta");
     output_tree->Branch("distanceCHit",&distanceCHit, "distance C and hit");
     output_tree->Branch("tof",&tof, "time of flight");
     output_tree->Branch("cubeE",&cubeE, "CubeE");
+    */
     output_tree->Branch("category", &category, "category");
+    output_tree->Branch("signalLeverArm", &signalLeverArm, "signalLeverArm");
+    output_tree->Branch("signalAngle", &signalAngle, "signalAngle");
+    output_tree->Branch("signalBeta", &signalBeta, "signalBeta");
+    output_tree->Branch("signalDistanceCHit", &signalDistanceCHit, "signalDistanceCHit");
+    output_tree->Branch("signalTOF", &signalTOF, "signalTOF");
+    output_tree->Branch("signalCubeE", &signalCubeE, "signalCubeE");
+    output_tree->Branch("secondaryNeutronLeverArm", &secondaryNeutronLeverArm, "secondaryNeutronLeverArm");
+    output_tree->Branch("secondaryNeutronAngle", &secondaryNeutronAngle, "secondaryNeutronAngle");
+    output_tree->Branch("secondaryNeutronBeta", &secondaryNeutronBeta, "secondaryNeutronBeta");
+    output_tree->Branch("secondaryNeutronDistanceCHit", &secondaryNeutronDistanceCHit, "secondaryNeutronDistanceCHit");
+    output_tree->Branch("secondaryNeutronTOF", &secondaryNeutronTOF, "secondaryNeutronTOF");
+    output_tree->Branch("secondaryNeutronCubeE", &secondaryNeutronCubeE, "secondaryNeutronCubeE");
+    output_tree->Branch("primaryGammaLeverArm", &primaryGammaLeverArm, "primaryGammaLeverArm");
+    output_tree->Branch("primaryGammaAngle", &primaryGammaAngle, "primaryGammaAngle");
+    output_tree->Branch("primaryGammaBeta", &primaryGammaBeta, "primaryGammaBeta");
+    output_tree->Branch("primaryGammaDistanceCHit", &primaryGammaDistanceCHit, "primaryGammaDistanceCHit");
+    output_tree->Branch("primaryGammaTOF", &primaryGammaTOF, "primaryGammaTOF");
+    output_tree->Branch("primaryGammaCubeE", &primaryGammaCubeE, "primaryGammaCubeE");
+    output_tree->Branch("secondaryGammaLeverArm", &secondaryGammaLeverArm, "secondaryGammaLeverArm");
+    output_tree->Branch("secondaryGammaAngle", &secondaryGammaAngle, "secondaryGammaAngle");
+    output_tree->Branch("secondaryGammaBeta", &secondaryGammaBeta, "secondaryGammaBeta");
+    output_tree->Branch("secondaryGammaDistanceCHit", &secondaryGammaDistanceCHit, "secondaryGammaDistanceCHit");
+    output_tree->Branch("secondaryGammaTOF", &secondaryGammaTOF, "secondaryGammaTOF");
+    output_tree->Branch("secondaryGammaCubeE", &secondaryGammaCubeE, "secondaryGammaCubeE");
                                                                                 
     for(int i = 1; i != filenum; i++)
     {
@@ -356,6 +406,31 @@ void gamma()
             tof = -1;
             cubeE = -10;
             category = -1;
+
+            signalLeverArm = -1000;
+            signalAngle = -1000;
+            signalBeta = -1000;
+            signalDistanceCHit = -1000;
+            signalTOF = -1000;
+            signalCubeE = -1000;
+            secondaryNeutronLeverArm = -1000;
+            secondaryNeutronAngle = -1000;
+            secondaryNeutronBeta = -1000;
+            secondaryNeutronDistanceCHit = -1000;
+            secondaryNeutronTOF = -1000;
+            secondaryNeutronCubeE = -1000;
+            primaryGammaLeverArm = -1000;
+            primaryGammaAngle = -1000;
+            primaryGammaBeta = -1000;
+            primaryGammaDistanceCHit = -1000;
+            primaryGammaTOF = -1000;
+            primaryGammaCubeE = -1000;
+            secondaryGammaLeverArm = -1000;
+            secondaryGammaAngle = -1000;
+            secondaryGammaBeta = -1000;
+            secondaryGammaDistanceCHit = -1000;
+            secondaryGammaTOF = -1000;
+            secondaryGammaCubeE = -1000;
 
             Hit_t earliest_hit;
             Hit_t earliest_neutron_hit;
@@ -536,7 +611,7 @@ void gamma()
                             pow(t_gammaHitZ[n_gammaHit] - t_gammaStartingPointZ[n_gammaHit],2),0.5);
 
                     //calculate signal window; time of flight
-                    float signalWindow = t_gammaHitT[n_gammaHit] - t_vtxTime -1 ;
+                    float signalWindow = t_gammaHitT[n_gammaHit] - t_vtxTime;
 
                     //time b/w starting point and hit
                     float signalWindowStart = t_gammaHitT[n_gammaHit] - t_vtxTime - t_gammaStartingPointT[n_gammaHit];
@@ -635,8 +710,167 @@ void gamma()
 
                 vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.vtxSignal[i];
             }
+            
+            ////pi case
+            if(num_fspi == 1 && num_fsp ==0)
+            {
+                //signal
+                if(earliest_hit.category == 1)
+                {
+                    leverarm_signal->Fill(earliest_hit.trackLength);
+                    angle_signal->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
+                    beta_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                    distance_signal->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
+                    TOF_signal->Fill(earliest_hit.timeWindow);
+                    CubeE_signal->Fill(earliest_hit.CubeE);
+                    signalLeverArm = earliest_hit.trackLength;
+                    signalAngle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
+                    signalBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                    signalDistanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                    signalTOF = earliest_hit.timeWindow;
+                    signalCubeE = earliest_hit.CubeE;
+                }
+
+                //secondary neutron
+                if(earliest_hit.category == 2)
+                {
+                    if(abs(earliest_hit.piDeath[0]) < 120 && abs(earliest_hit.piDeath[1]) < 120 && abs(earliest_hit.piDeath[2]) < 100)
+                    {
+                        leverarm_secondary_neutron->Fill(earliest_hit.trackLength);
+                        angle_secondary_neutron->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
+                        beta_secondary_neutron->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                        distance_secondary_neutron->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
+                        TOF_secondary_neutron->Fill(earliest_hit.timeWindow);
+                        CubeE_secondary_neutron->Fill(earliest_hit.CubeE);
+                        secondaryNeutronLeverArm = earliest_hit.trackLength;
+                        secondaryNeutronAngle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
+                        secondaryNeutronBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                        secondaryNeutronDistanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                        secondaryNeutronTOF = earliest_hit.timeWindow;
+                        secondaryNeutronCubeE = earliest_hit.CubeE;
+                        num_secondary_neutron += 1;
+                    }
+                  
+                    if(abs(earliest_hit.piDeath[0]) > 120 || abs(earliest_hit.piDeath[1]) > 120 || abs(earliest_hit.piDeath[2]) > 100)
+                        num_secondary_neutron_C_out3dst += 1;
+                }
+
+                //primary gamma 
+                if(earliest_hit.category == 3)
+                {
+                    leverarm_primary_gamma->Fill(earliest_hit.trackLength);
+                    angle_primary_gamma->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
+                    beta_primary_gamma->Fill((earliest_hit.trackLength/(earliest_hit.timeWindow-1))/c_velocity);
+                    distance_primary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
+                    TOF_primary_gamma->Fill(earliest_hit.timeWindow);
+                    CubeE_primary_gamma->Fill(earliest_hit.CubeE);
+                    primaryGammaLeverArm = earliest_hit.trackLength;
+                    primaryGammaAngle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
+                    primaryGammaBeta = (earliest_hit.trackLength/(earliest_hit.timeWindow-1))/c_velocity;
+                    primaryGammaDistanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                    primaryGammaTOF = earliest_hit.timeWindow;
+                    primaryGammaCubeE = earliest_hit.CubeE;
+                }
+
+                //secondary gamma
+                if(earliest_hit.category == 4)
+                {
+                    leverarm_secondary_gamma->Fill(earliest_hit.trackLength);
+                    angle_secondary_gamma->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
+                    beta_secondary_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                    distance_secondary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
+                    TOF_secondary_gamma->Fill(earliest_hit.timeWindow);
+                    CubeE_secondary_gamma->Fill(earliest_hit.CubeE);
+                    secondaryGammaLeverArm = earliest_hit.trackLength;
+                    secondaryGammaAngle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
+                    secondaryGammaBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                    secondaryGammaDistanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                    secondaryGammaTOF = earliest_hit.timeWindow;
+                    secondaryGammaCubeE = earliest_hit.CubeE;
+                }
+            }    //end of pion case
 
 
+            ////proton case
+            if(num_fspi == 0 && num_fsp ==1)
+            {
+                //signal
+                if(earliest_hit.category == 1)
+                {
+                    leverarm_signal->Fill(earliest_hit.trackLength);
+                    angle_signal->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
+                    beta_signal->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                    distance_signal->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
+                    TOF_signal->Fill(earliest_hit.timeWindow);
+                    CubeE_signal->Fill(earliest_hit.CubeE);
+                    signalLeverArm = earliest_hit.trackLength;
+                    signalAngle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
+                    signalBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                    signalDistanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                    signalTOF = earliest_hit.timeWindow;
+                    signalCubeE = earliest_hit.CubeE;
+                }
+
+                //secondary neutron
+                if(earliest_hit.category == 2)
+                {
+                    if(abs(earliest_hit.protonDeath[0]) < 120 && abs(earliest_hit.protonDeath[1]) < 120 && earliest_hit.protonDeath[2] < 150 && earliest_hit.protonDeath[2] > -50)
+                    {
+                        if(earliest_hit.isFromProton)
+                        {
+                            leverarm_secondary_neutron->Fill(earliest_hit.trackLength);
+                            angle_secondary_neutron->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
+                            beta_secondary_neutron->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                            distance_secondary_neutron->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
+                            TOF_secondary_neutron->Fill(earliest_hit.timeWindow);
+                            CubeE_secondary_neutron->Fill(earliest_hit.CubeE);
+                            secondaryNeutronLeverArm = earliest_hit.trackLength;
+                            secondaryNeutronAngle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
+                            secondaryNeutronBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                            secondaryNeutronDistanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                            secondaryNeutronTOF = earliest_hit.timeWindow;
+                            secondaryNeutronCubeE = earliest_hit.CubeE;
+                        }
+                    }
+                }
+
+                //primary gamma
+                if(earliest_hit.category == 3)
+                {
+                    leverarm_primary_gamma->Fill(earliest_hit.trackLength);
+                    angle_primary_gamma->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
+                    beta_primary_gamma->Fill((earliest_hit.trackLength/(earliest_hit.timeWindow-1))/c_velocity);
+                    distance_primary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
+                    TOF_primary_gamma->Fill(earliest_hit.timeWindow);
+                    CubeE_primary_gamma->Fill(earliest_hit.CubeE);
+                    primaryGammaLeverArm = earliest_hit.trackLength;
+                    primaryGammaAngle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
+                    primaryGammaBeta = (earliest_hit.trackLength/(earliest_hit.timeWindow-1))/c_velocity;
+                    primaryGammaDistanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                    primaryGammaTOF = earliest_hit.timeWindow;
+                    primaryGammaCubeE = earliest_hit.CubeE;
+                }
+
+                //secondary gamma
+                if(earliest_hit.category == 4)
+                {
+                    leverarm_secondary_gamma->Fill(earliest_hit.trackLength);
+                    angle_secondary_gamma->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
+                    beta_secondary_gamma->Fill((earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity);
+                    distance_secondary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
+                    TOF_secondary_gamma->Fill(earliest_hit.timeWindow);
+                    CubeE_secondary_gamma->Fill(earliest_hit.CubeE);
+                    secondaryGammaLeverArm = earliest_hit.trackLength;
+                    secondaryGammaAngle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
+                    secondaryGammaBeta = (earliest_hit.trackLength/earliest_hit.timeWindow)/c_velocity;
+                    secondaryGammaDistanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                    secondaryGammaTOF = earliest_hit.timeWindow;
+                    secondaryGammaCubeE = earliest_hit.CubeE;
+                }
+            }   //end of proton case
+
+
+            /*
             ////pi case
             if(num_fspi == 1 && num_fsp ==0)
             {
@@ -794,6 +1028,7 @@ void gamma()
                     cubeE = earliest_hit.CubeE;
                 }
             }   //end of proton case
+            */
             category = earliest_hit.category;
             output_tree->Fill();
         }       //end of event iterate
