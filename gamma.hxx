@@ -80,6 +80,7 @@ int num_secondary_neutron_C_out3dst  = 0;
 
 using namespace std;
 //histograms{
+TH2F * distance_vs_beta = new TH2F("distance_vs_beta", "", 60,0,1.5,20,0,200);
 
 TH2F * beta_vs_leverarm_parentId_0 = new TH2F("beta_vs_leverarm_parentId_0", "",30,0,1.5,20,0,200);
 TH2F * beta_vs_leverarm_parentId_1 = new TH2F("beta_vs_leverarm_parentId_1", "",30,0,1.5,20,0,200);
@@ -122,25 +123,11 @@ TH1F * CubeE_secondary_gamma = new TH1F("CubeE_secondary_gamma", "CubeE of secon
 
 //}
 
-bool is_inFV = false;       //check if vertex is in FV
-bool is_in3DST = false;     //check if vertex is in 3DST
-
 float energyHitCut = 0; //energy deposit threshold for cube
-bool isCubeE = 1;
 
-int number_of_CC = 0;
-
-//change this part to do slope, intercept test
-int cut_slope = 0;
-int cut_y_intercept = 100000;
 //channel type
 int num_fspi = 1;   //number of fs charged pion
 int num_fsp = 0;    //number of fs proton
-
-
-int iftest = 1;
-double test_cut_angle = 0;
-double test_cut_distance = 1000;
 
 const double c_velocity = 29.9792458;
 
@@ -253,15 +240,14 @@ double GetDistance(float a[], float b[])
 
 void gamma()
 {
-    int endPROD, beginPROD, filenum;
+    int filenum;
     
-    //cout<<"filenum :"<<endl;
-    //cin>>filenum;
-    filenum = 1000;
+    cout<<"filenum :"<<endl;
+    cin>>filenum;
+    //filenum = 1000;
     cout<<"start"<<endl;
 
     gErrorIgnoreLevel = kWarning;
-    TString folder_name = TString::Format("cc%dpi%dp_slope_%d_yintercept_%d",num_fspi,num_fsp,cut_slope,cut_y_intercept);
     if(num_fspi == 1)
     {
         gSystem->mkdir("pion");
@@ -272,8 +258,6 @@ void gamma()
         gSystem->mkdir("proton");
         gSystem->cd("proton");
     }
-    gSystem->mkdir(folder_name);
-    gSystem->cd(folder_name);
 
     TFile * outfile = new TFile("variables.root","RECREATE");
     TTree * output_tree = new TTree("output_tree","output_tree");
@@ -317,7 +301,6 @@ void gamma()
         //cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
         cout<<i<<"th file"<<endl;
         string file = Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i);
-        //analyze(Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i));
         //string file = Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i);
 
         auto _file = new TFile(TString(file));
@@ -930,6 +913,8 @@ void gamma()
                     tof = earliest_hit.timeWindow;
                     CubeE_primary_gamma->Fill(earliest_hit.CubeE);
                     cubeE = earliest_hit.CubeE;
+
+                    distance_vs_beta->Fill((earliest_hit.trackLength/(earliest_hit.timeWindow-1))/c_velocity,earliest_hit.trackLength);
                 }
 
                 //secondary gamma
@@ -1265,5 +1250,10 @@ void gamma()
     can->Clear();
 
 //}
+    distance_vs_beta->Draw("colz");
+    distance_vs_beta->Write();
+    can->SaveAs("distance_vs_beta.pdf");
+    can->Clear();
+
     fi1->Close();
 }
