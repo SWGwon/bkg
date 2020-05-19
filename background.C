@@ -54,15 +54,10 @@ float tof;
 float cubeE;
 float nCube;
 float category;
-float neutronE;
 float neutrinoE;
 
 using namespace std;
 //histograms{
-TH2F * distance_vs_beta = new TH2F("distance_vs_beta", "", 60,0,1.5,40,0,200);
-
-TH2F * beta_vs_leverarm_parentId_0 = new TH2F("beta_vs_leverarm_parentId_0", "",30,0,1.5,20,0,200);
-TH2F * beta_vs_leverarm_parentId_1 = new TH2F("beta_vs_leverarm_parentId_1", "",30,0,1.5,20,0,200);
 
 //signal{
 TH1F * leverarm_signal = new TH1F("leverarm_signal","lever arm of signal",20,0,200);
@@ -73,9 +68,6 @@ TH1F * TOF_signal = new TH1F("TOF_signal","time of flight of signal", 25,0,25);
 TH1F * CubeE_signal = new TH1F("CubeE_signal", "CubeE of signal", 30, 0, 15);
 TH1F * startingT_signal = new  TH1F("staringT_signal", "startingT of signal",250,0,5);
 TH1F * nCubeDis_signal = new TH1F("nCubeDis_signal","number of cubes, signal", 50, 0, 100);
-TH1F * neutronE_signal = new TH1F("neutronE_signal","energy of neurton, signal",50, 0, 1000);
-std::map<float,float> radius_cubeE_signal;
-TH2F * radiusCubeE_signal = new TH2F("radiusCubeE_signal","radius vs cubeE, signal",50,0,50,30,0,30);
 //}
 //secondary neutron{ 
 TH1F * leverarm_secondary_neutron = new TH1F("leverarm_secondary_neutron","lever arm of secondary_neutron",20,0,200);
@@ -86,9 +78,6 @@ TH1F * TOF_secondary_neutron = new TH1F("TOF_secondary_neutron","time of flight 
 TH1F * CubeE_secondary_neutron = new TH1F("CubeE_secondary_neutron", "CubeE of secondary_neutron", 30, 0, 15);
 TH1F * startingT_secondary_neutron = new  TH1F("staringT_secondary_neutron", "startingT of secondary neutron",250,0,5);
 TH1F * nCubeDis_secondary_neutron = new TH1F("nCubeDis_secondary_neutron","number of cubes, secondary neutron", 50, 0, 100);
-TH1F * neutronE_secondary_neutron = new TH1F("neutronE_secondary_neutron","energy of neurton, secondary neutron",50, 0, 1000);
-std::map<float,float> radius_cubeE_secondary_neutron;
-TH2F * radiusCubeE_secondary_neutron = new TH2F("radiusCubeE_secondary_neutron","radius vs cubeE, secondary_neutron",50,0,50,30,0,30);
 //}
 
 //primary gamma{
@@ -100,8 +89,6 @@ TH1F * TOF_primary_gamma = new TH1F("TOF_primary_gamma","time of flight of prima
 TH1F * CubeE_primary_gamma = new TH1F("CubeE_primary_gamma", "CubeE of primary_gamma", 30, 0, 15);
 TH1F * startingT_primary_gamma = new  TH1F("staringT_primary_gamma", "startingT of peiamry_gamma",250,0,5);
 TH1F * nCubeDis_primary_gamma = new TH1F("nCubeDis_primary_gamma","number of cubes, primary gamma", 50, 0, 100);
-std::map<float,float> radius_cubeE_primary_gamma;
-TH2F * radiusCubeE_primary_gamma = new TH2F("radiusCubeE_primary_gamma","radius vs cubeE, primary_gamma",50,0,50,30,0,30);
 //}
 
 //secondary gamma{
@@ -113,12 +100,9 @@ TH1F * TOF_secondary_gamma = new TH1F("TOF_secondary_gamma","time of flight of s
 TH1F * CubeE_secondary_gamma = new TH1F("CubeE_secondary_gamma", "CubeE of secondary_gamma", 30, 0, 15);
 TH1F * startingT_secondary_gamma = new  TH1F("staringT_secondary_gamma", "startingT of secondary_gamma",250,0,5);
 TH1F * nCubeDis_secondary_gamma = new TH1F("nCubeDis_secondary_gamma","number of cubes, secondary gamma", 50, 0, 100);
-std::map<float,float> radius_cubeE_secondary_gamma;
-TH2F * radiusCubeE_secondary_gamma = new TH2F("radiusCubeE_secondary_gamma","radius vs cubeE, secondary_gamma",50,0,50,30,0,30);
 //}
 
 TH1F * timeWindow = new TH1F("timeWindow", "",250,0,25);
-
 TH2F * XYPlane = new TH2F("XY","XY;X;Y",240,-120,120,240,-120,120);
 TH2F * XZPlane = new TH2F("XZ","XZ;X;Z",240,-120,120,200,-100,100);
 TH2F * YZPlane = new TH2F("YZ","YZ;Y;Z",240,-120,120,200,-100,100);
@@ -128,7 +112,6 @@ TH2F * cube_YZPlane = new TH2F("cube_YZ","YZ;Y;Z",240,-120,120,200,-100,100);
 TH2F * XYPlane_allhits = new TH2F("XY_allhits","XY;X;Y",240,-120,120,240,-120,120);
 TH2F * XZPlane_allhits = new TH2F("XZ_allhits","XZ;X;Z",240,-120,120,200,-100,100);
 TH2F * YZPlane_allhits = new TH2F("YZ_allhits","YZ;Y;Z",240,-120,120,200,-100,100);
-
 //}
 
 float energyHitCut = 0.2; //energy deposit threshold for cube
@@ -336,7 +319,6 @@ int main()
     output_tree->Branch("cubeE",&cubeE, "CubeE");
     output_tree->Branch("category", &category, "category");
     output_tree->Branch("nCube", &nCube, "nCube");
-    output_tree->Branch("neutronE", &neutronE, "neutronE");
     output_tree->Branch("neutrinoE", &neutrinoE, "neutrinoE");
 
 
@@ -441,7 +423,6 @@ int main()
         cubeE = -1000;
         category = -1000;
         nCube = -1000;
-        neutronE = -1000;
 
 
         //out of fiducial volume
@@ -874,8 +855,6 @@ int main()
             CubeE_signal->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_signal->Fill(earliest_hit.startingPointT);
-            neutronE_signal->Fill(earliest_hit.GetTrueE());
-            neutronE = earliest_hit.GetTrueE();
             nCubeDis_signal->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
@@ -911,8 +890,6 @@ int main()
             CubeE_secondary_neutron->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_secondary_neutron->Fill(earliest_hit.startingPointT);
-            neutronE_secondary_neutron->Fill(earliest_hit.GetTrueE());
-            neutronE = earliest_hit.GetTrueE();
             nCubeDis_secondary_neutron->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
@@ -948,8 +925,6 @@ int main()
             CubeE_primary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_primary_gamma->Fill(earliest_hit.startingPointT);
-
-            distance_vs_beta->Fill((earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity,earliest_hit.GetLeverArm());
             nCubeDis_primary_gamma->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
