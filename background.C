@@ -46,7 +46,6 @@
 #include <TStyle.h>
 #include <TROOT.h>
 
-
 float leverArm;
 float angle;
 float beta;
@@ -57,9 +56,6 @@ float nCube;
 float category;
 float neutronE;
 float neutrinoE;
-
-int num_secondary_neutron = 0;
-int num_secondary_neutron_C_out3dst  = 0;
 
 using namespace std;
 //histograms{
@@ -143,140 +139,88 @@ float energyHitCut = 0.2; //energy deposit threshold for cube
 
 const double c_velocity = 29.9792458;
 
-class Hit_t 
-{
-    public:
-        float timeWindow,           // time windows of the hit
-              timeStartT,       //time between hit and startT
-              lengthStart,       //length between hit and start position
-              timeWindowSmear,      // smeared time window 
-              timeSmear,        // smear time
-              energyDeposit,        // energy deposited by the neutron
-              trackLength,          // lever arm
-              trueRec,      // true reconstructed energy
-              smearRec,
-              gammaTrueE,
-              vtxSignal[3],     // neutrino vertex position of the neutron
-              vtxTime,      // neutrino  vertex time
-              trueE,    //neutron true energy
-              CubeE,    //neutron cube energy
-              trueT,    //neutron true time
-              hitPDG,    //hit PDG
-              startingPointT,
-              category,     //kind of hit(1: signal, 2: secondary neutron, 3: primary gamma, 4: secondary gamma)
-              piDeath[3],      //pion death
-              protonDeath[3];      //proton Death
-
-
-        //neutron hit position
-        float hit[3];
-
-        float startingPoint[3];
-
-        int bkgLoc,         // neutrino vertex position
-            parentId,    // Where the hit come from
-            parentPdg;   // PDG of parent
-
-        bool isTherePion50,     // Is there a pion with KE > 50 MeV in FS particles
-             isThereProton300;      // Is there a proton with KE > 300 MeV in FS particles
-        bool isEmpty;
-        bool isNeutron;
-        bool isGamma;
-        bool isFromPion;
-        bool isFromProton;
-
-        Hit_t()
-            :timeWindow(0),
-            timeSmear(0),    
-            timeStartT(0),
-            lengthStart(0),
-            energyDeposit(0),
-            trackLength(0),  
-            trueRec(0),      
-            smearRec(0),
-            vtxTime(0),      
-            trueE(0), 
-            CubeE(0),
-            trueT(0), 
-            hitPDG(0),
-            startingPointT(0),
-            gammaTrueE(0),
-            bkgLoc(125124123),        
-            parentId(123124123),
-            parentPdg(123123123),
-            category(-1),
-            isTherePion50(0),  
-            isThereProton300(0),
-            isEmpty(1),
-            isFromPion(0),
-            isFromProton(0),
-            isNeutron(0),
-            isGamma(0)
-    {
-        for(int i = 0; i < 3; i++)
-        {
-            this->vtxSignal[i] = 0; 
-            this->piDeath[i] = 0;   
-            this->protonDeath[i] = 0; 
-            this->hit[i] = 0;
-            this->startingPoint[i] = 0;
-        }
-    }
-
-        ~Hit_t() {}
-};
-
 class Hit
 {
     private:
         float timeWindow;           // time windows of the hit
-        float X;
-        float Y;
-        float Z;
-        float T;
-        float parentId;
-        float distance_from_earliest_hit;
-        float CubeE;    //neutron cube energy
+        float timeWindowSmear;      // smeared time window 
+        float X;                    // X position of hit
+        float Y;                    // Y position of hit
+        float Z;                    // Z position of hit
+        float T;                    // true T of hit
+        float vtxX;                 // X position of vertex
+        float vtxY;                 // Y position of vertex
+        float vtxZ;                 // Z position of vertex
+        float vtxT;                 // ture T of vertex
+        float leverArm;             // lever arm
+        float parentId;             // parentId of hit
+        float cubeE;    //neutron cube energy
+        float trueE;    //neutron true energy
+        float trueT;    //neutron true time
+        float hitPDG;    //hit PDG
+        float energyDeposit;        // energy deposited by the neutron
         bool isNeutron;
         bool isGamma;
 
     public:
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
         void SetTimeWindow(float timeWindow){this->timeWindow = timeWindow;};
-        void SetX(float X){this->X = X;};
-        void SetY(float Y){this->Y = Y;};
-        void SetZ(float Z){this->Z = Z;};
-        void SetT(float T){this->T = T;};
-        void SetParentId(float parentId){this->parentId = parentId;};
-        void SetDistance(float distance){this->distance_from_earliest_hit = distance;};
-        void SetIsNeutron(bool isNeutron){this->isNeutron = isNeutron;};
-        void SetIsGamma(bool isGamma){this->isGamma = isGamma;};
-        void SetCubeE(float CubeE){this->CubeE = CubeE;};
-
         float GetTimeWindow(){return this->timeWindow;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetTimeWindowSmear(float timeWindowSmear){this->timeWindowSmear = timeWindowSmear;};
+        float GetTimeWindowSmear(){return this->timeWindowSmear;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetX(float X){this->X = X;};
         float GetX(){return this->X;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetY(float Y){this->Y = Y;};
         float GetY(){return this->Y;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetZ(float Z){this->Z = Z;};
         float GetZ(){return this->Z;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetT(float T){this->T = T;};
         float GetT(){return this->T;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetVtxX(float vtxX){this->vtxX = vtxX;};
+        float GetVtxX(){return this->vtxX;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetVtxY(float vtxY){this->vtxY = vtxY;};
+        float GetVtxY(){return this->vtxY;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetVtxZ(float vtxZ){this->vtxZ = vtxZ;};
+        float GetVtxZ(){return this->vtxZ;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetVtxT(float vtxT){this->vtxT = vtxT;};
+        float GetVtxT(){return this->vtxT;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetLeverArm(float leverArm){this->leverArm = leverArm;};
+        float GetLeverArm(){return this->leverArm;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetParentId(float parentId){this->parentId = parentId;};
         float GetParentId(){return this->parentId;};
-        float GetDistance(){return this->distance_from_earliest_hit;};
-        bool GetIsNeutron(){return this->isNeutron;};
-        bool GetIsGamma(){return this->isGamma;};
-        float GetCubeE(){return this->CubeE;};
-
-        float timeStartT;       //time between hit and startT
-        float lengthStart;       //length between hit and start position
-        float timeWindowSmear;      // smeared time window 
-        float timeSmear;        // smear time
-        float energyDeposit;        // energy deposited by the neutron
-        float trackLength;          // lever arm
-        float trueRec;      // true reconstructed energy
-        float smearRec;
-        float gammaTrueE;
-        float vtxSignal[3];     // neutrino vertex position of the neutron
-        float vtxTime;      // neutrino  vertex time
-        float trueE;    //neutron true energy
-        float trueT;    //neutron true time
-        float hitPDG;    //hit PDG
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetCubeE(float cubeE){this->cubeE = cubeE;};
+        float GetCubeE(){return this->cubeE;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetTrueE(float trueE){this->trueE = trueE;};
+        float GetTrueE(){return this->trueE;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetTrueT(float trueT){this->trueT = trueT;};
+        float GetTrueT(){return this->trueT;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetHitPDG(float hitPDG){this->hitPDG = hitPDG;};
+        float GetHitPDG(){return this->hitPDG;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetEnergyDeposit(float energyDeposit){this->energyDeposit = energyDeposit;};
+        float GetEnergyDeposit(){return this->energyDeposit;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetIsNeutron(bool isNeutron){this->isNeutron = isNeutron;};
+        bool IsNeutron(){return this->isNeutron;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+        void SetIsGamma(bool isGamma){this->isGamma = isGamma;};
+        bool IsGamma(){return this->isGamma;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
         float startingPointT;
         float category;     //kind of hit(1: signal; 2: secondary neutron; 3: primary gamma; 4: secondary gamma)
         float piDeath[3];      //pion death
@@ -285,41 +229,29 @@ class Hit
         bool isFromPion;
         bool isFromProton;
 
-        //neutron hit position
-        float hit[3];
-
         float startingPoint[3];
 
-        int bkgLoc,         // neutrino vertex position
-            parentPdg;   // PDG of parent
+        int parentPdg;   // PDG of parent
 
         bool isEmpty;
 
-        Hit()
-            :X(0),
+        Hit():
+            timeWindow(0),
+            timeWindowSmear(0),    
+            X(0),
             Y(0),
             Z(0),
             parentId(0),
-            distance_from_earliest_hit(0),
             isNeutron(false),
             isGamma(false),
             T(0),
-            timeWindow(0),
-            timeSmear(0),    
-            timeStartT(0),
-            lengthStart(0),
             energyDeposit(0),
-            trackLength(0),  
-            trueRec(0),      
-            smearRec(0),
-            vtxTime(0),      
+            leverArm(0),  
             trueE(0), 
-            CubeE(0),
+            cubeE(0),
             trueT(0), 
             hitPDG(0),
             startingPointT(0),
-            gammaTrueE(0),
-            bkgLoc(125124123),        
             parentPdg(123123123),
             category(-1),
             isEmpty(1),
@@ -328,10 +260,8 @@ class Hit
     {
         for(int i = 0; i < 3; i++)
         {
-            this->vtxSignal[i] = 0; 
             this->piDeath[i] = 0;   
             this->protonDeath[i] = 0; 
-            this->hit[i] = 0;
             this->startingPoint[i] = 0;
         }
     }
@@ -390,9 +320,9 @@ double GetAngle(float a[], float b[])
 }
 
 //a, b are vector
-double GetDistance(float a[], float b[])
+double GetDistance(float a[], Hit hit)
 {
-    return pow(pow(a[0]-b[0],2)+pow(a[1]-b[1],2)+pow(a[2]-b[2],2),0.5);
+    return pow(pow(a[0]-hit.GetX(),2)+pow(a[1]-hit.GetY(),2)+pow(a[2]-hit.GetZ(),2),0.5);
 }
 
 int main()
@@ -453,7 +383,7 @@ int main()
     float t_neutronHitT[1000], t_neutronParentId[1000], t_neutronParentPDG[1000];
     float t_neutronHitE[1000], t_neutronTrueE[1000];
     float t_neutronCubeE[1000];
-    float t_neutronHitSmearT[999];
+    float t_neutronHitSmearT[1000];
     float t_neutronHitPDG[1000];
 
     float t_vtx[3], t_vtxTime;
@@ -467,7 +397,7 @@ int main()
     float t_gammaHitX[1000], t_gammaHitY[1000], t_gammaHitZ[1000];
     float t_gammaStartingPointX[1000], t_gammaStartingPointY[1000], t_gammaStartingPointZ[1000], t_gammaStartingPointT[1000];
     float t_gammaHitT[1000], t_gammaParentId[1000], t_gammaParentPDG[1000];
-    float t_gammaHitE[1000], t_gammaTrueE[1000];
+    float t_gammaHitE[1000]; 
     float t_gammaCubeE[1000];
     float t_gammaHitSmearT[1000];
     float t_gammaHitPDG[1000];
@@ -508,7 +438,6 @@ int main()
     tree.SetBranchAddress("gammaParentId", &t_gammaParentId);
     tree.SetBranchAddress("gammaParentPDG", &t_gammaParentPDG);
     tree.SetBranchAddress("gammaHitE", &t_gammaHitE);
-    tree.SetBranchAddress("gammaTrueE", &t_gammaTrueE);
     tree.SetBranchAddress("gammaCubeE", &t_gammaCubeE);
     tree.SetBranchAddress("gammaHitT", &t_gammaHitT);
     tree.SetBranchAddress("gammaHitSmearT", &t_gammaHitSmearT);
@@ -525,6 +454,8 @@ int main()
     for(int event = 0; event < nevents; event++)
         //for(int event = temp; event < temp+1; event++)
     {
+        tree.GetEntry(event);
+
         cout<<"\033[1Aevent: "<<(double)(event*100/nevents)<<"%\033[1000D"<<endl;
         leverArm = -1000;
         angle = -1000;
@@ -536,17 +467,13 @@ int main()
         nCube = -1000;
         neutronE = -1000;
 
-        int num_pi = 0;
-        int num_proton = 0;
-
-        tree.GetEntry(event);
 
         //out of fiducial volume
         if(abs(t_vtx[0]) > 50 || abs(t_vtx[1]) > 50 || abs(t_vtx[2]) > 50)
             continue;
 
+        //check whether it's CC event or not
         bool is_CC = false;
-
         for(int inFS = 0; inFS < t_nFS; inFS++)
         {
             if(abs(t_fsPdg[inFS]) == 11 || abs(t_fsPdg[inFS]) == 13)    //electronPDG=11,muonPDG=13
@@ -555,11 +482,13 @@ int main()
                 break;
             }
         }
-
+        //if it's not CC skip this event
         if(!is_CC)
             continue;
 
-
+        //count # of charged pion,proton in FS
+        int num_pi = 0;
+        int num_proton = 0;
         for(int inFS = 0; inFS < t_nFS; inFS++)
         {
             if(abs(t_fsPdg[inFS]) == 211)    //pionPDG=+-211
@@ -573,6 +502,7 @@ int main()
             }
         }
 
+        //flags for channels
         bool _1pi0p = false;
         bool _0pi1p = false;
         bool _0pi0p = false;
@@ -586,10 +516,10 @@ int main()
         if(!_1pi0p && !_0pi1p && !_0pi0p)
             continue;
 
-        //clustering
-        Hit temp_neutron_Hit;   //clustering
-        std::vector<Hit> vectorHit;    //neutron+gamma
+        Hit temp_neutron_Hit;   
+        std::vector<Hit> vectorHit;    //vector of all neutron+gamma hits
 
+        //push_back satisying hits to vectorHit
         for(int n_neutronHit = 0; n_neutronHit < 1000; n_neutronHit++)
         {
             //out of 3dst
@@ -609,34 +539,30 @@ int main()
                 continue;
 
             //calculate lever arm
-            float trackLength = pow(
+            float leverArm = pow(
                     pow(t_neutronHitX[n_neutronHit] - t_vtx[0],2)+
                     pow(t_neutronHitY[n_neutronHit] - t_vtx[1],2)+
                     pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
 
             //calculate signal window; time of flight
             float signalWindow = t_neutronHitT[n_neutronHit] - t_vtxTime - 1;
-            //        timeWindow->Fill(signalWindow);
+            float signalWindowSmear = t_neutronHitSmearT[n_neutronHit] - t_vtxTime;
 
             //Fix a bug from edep-sim
             if(signalWindow == 1)
                 signalWindow = 0.5;
 
-            //time b/w starting point and hit
-            float signalWindowStart = t_neutronHitT[n_neutronHit] - t_vtxTime - t_neutronStartingPointT[n_neutronHit];
-            float signalWindowSmear = t_neutronHitSmearT[n_neutronHit] - t_vtxTime;
 
             if(signalWindow > 0)
             {
                 temp_neutron_Hit.SetTimeWindow(signalWindow);
-                temp_neutron_Hit.timeStartT = signalWindowStart;
-                temp_neutron_Hit.timeWindowSmear = signalWindowSmear;
-                temp_neutron_Hit.trackLength = trackLength;
-                temp_neutron_Hit.energyDeposit = t_neutronHitE[n_neutronHit];
+                temp_neutron_Hit.SetTimeWindowSmear(signalWindowSmear);
+                temp_neutron_Hit.SetLeverArm(leverArm);
+                temp_neutron_Hit.SetEnergyDeposit(t_neutronHitE[n_neutronHit]);
 
-                temp_neutron_Hit.vtxSignal[0] = t_vtx[0];
-                temp_neutron_Hit.vtxSignal[1] = t_vtx[1];
-                temp_neutron_Hit.vtxSignal[2] = t_vtx[2];
+                temp_neutron_Hit.SetVtxX(t_vtx[0]);
+                temp_neutron_Hit.SetVtxY(t_vtx[1]);
+                temp_neutron_Hit.SetVtxZ(t_vtx[2]);
 
                 temp_neutron_Hit.piDeath[0] = t_piDeath[0];
                 temp_neutron_Hit.piDeath[1] = t_piDeath[1];
@@ -646,11 +572,8 @@ int main()
                 temp_neutron_Hit.protonDeath[1] = t_protonDeath[1];
                 temp_neutron_Hit.protonDeath[2] = t_protonDeath[2];
 
-                temp_neutron_Hit.hit[0] = t_neutronHitX[n_neutronHit];
-                temp_neutron_Hit.hit[1] = t_neutronHitY[n_neutronHit];
-                temp_neutron_Hit.hit[2] = t_neutronHitZ[n_neutronHit];
-                temp_neutron_Hit.trueT = t_neutronHitT[n_neutronHit];
-                temp_neutron_Hit.trueE = t_neutronTrueE[n_neutronHit];
+                temp_neutron_Hit.SetTrueT(t_neutronHitT[n_neutronHit]);
+                temp_neutron_Hit.SetTrueE(t_neutronTrueE[n_neutronHit]);
                 temp_neutron_Hit.SetCubeE(t_neutronCubeE[n_neutronHit]);
 
                 temp_neutron_Hit.startingPoint[0] = t_neutronStartingPointX[n_neutronHit];
@@ -659,9 +582,9 @@ int main()
 
                 temp_neutron_Hit.SetParentId(t_neutronParentId[n_neutronHit]);
                 temp_neutron_Hit.parentPdg = t_neutronParentPDG[n_neutronHit];
-                temp_neutron_Hit.hitPDG = t_neutronHitPDG[n_neutronHit];
+                temp_neutron_Hit.SetHitPDG(t_neutronHitPDG[n_neutronHit]);
 
-                temp_neutron_Hit.vtxTime = t_vtxTime;
+                temp_neutron_Hit.SetVtxT(t_vtxTime);
                 temp_neutron_Hit.isEmpty = 0;
                 if(t_neutronStartingPointX[n_neutronHit] == t_piDeath[0])
                     temp_neutron_Hit.isFromPion = 1;
@@ -704,34 +627,30 @@ int main()
                 continue;
 
             //calculate lever arm
-            float trackLength = pow(
+            float leverArm = pow(
                     pow(t_gammaHitX[n_gammaHit] - t_vtx[0],2)+
                     pow(t_gammaHitY[n_gammaHit] - t_vtx[1],2)+
                     pow(t_gammaHitZ[n_gammaHit] - t_vtx[2],2),0.5);
 
             //calculate signal window; time of flight
             float signalWindow = t_gammaHitT[n_gammaHit] - t_vtxTime - 1;
-            //        timeWindow->Fill(signalWindow);
+            float signalWindowSmear = t_gammaHitSmearT[n_gammaHit] - t_vtxTime;
 
             //Fix a bug from edep-sim
             if(signalWindow == 1)
                 signalWindow = 0.5;
 
-            //time b/w starting point and hit
-            float signalWindowStart = t_gammaHitT[n_gammaHit] - t_vtxTime - t_gammaStartingPointT[n_gammaHit];
-            float signalWindowSmear = t_gammaHitSmearT[n_gammaHit] - t_vtxTime;
 
             if(signalWindow > 0)
             {
                 temp_gamma_Hit.SetTimeWindow(signalWindow);
-                temp_gamma_Hit.timeStartT = signalWindowStart;
-                temp_gamma_Hit.timeWindowSmear = signalWindowSmear;
-                temp_gamma_Hit.trackLength = trackLength;
-                temp_gamma_Hit.energyDeposit = t_gammaHitE[n_gammaHit];
+                temp_gamma_Hit.SetTimeWindowSmear(signalWindowSmear);
+                temp_gamma_Hit.SetLeverArm(leverArm);
+                temp_gamma_Hit.SetEnergyDeposit(t_gammaHitE[n_gammaHit]);
 
-                temp_gamma_Hit.vtxSignal[0] = t_vtx[0];
-                temp_gamma_Hit.vtxSignal[1] = t_vtx[1];
-                temp_gamma_Hit.vtxSignal[2] = t_vtx[2];
+                temp_gamma_Hit.SetVtxX(t_vtx[0]);
+                temp_gamma_Hit.SetVtxY(t_vtx[1]);
+                temp_gamma_Hit.SetVtxZ(t_vtx[2]);
 
                 temp_gamma_Hit.piDeath[0] = t_piDeath[0];
                 temp_gamma_Hit.piDeath[1] = t_piDeath[1];
@@ -741,11 +660,7 @@ int main()
                 temp_gamma_Hit.protonDeath[1] = t_protonDeath[1];
                 temp_gamma_Hit.protonDeath[2] = t_protonDeath[2];
 
-                temp_gamma_Hit.hit[0] = t_gammaHitX[n_gammaHit];
-                temp_gamma_Hit.hit[1] = t_gammaHitY[n_gammaHit];
-                temp_gamma_Hit.hit[2] = t_gammaHitZ[n_gammaHit];
-                temp_gamma_Hit.trueT = t_gammaHitT[n_gammaHit];
-                temp_gamma_Hit.trueE = t_gammaTrueE[n_gammaHit];
+                temp_gamma_Hit.SetTrueT(t_gammaHitT[n_gammaHit]);
                 temp_gamma_Hit.SetCubeE(t_gammaCubeE[n_gammaHit]);
 
                 temp_gamma_Hit.startingPoint[0] = t_gammaStartingPointX[n_gammaHit];
@@ -754,9 +669,9 @@ int main()
 
                 temp_gamma_Hit.SetParentId(t_gammaParentId[n_gammaHit]);
                 temp_gamma_Hit.parentPdg = t_gammaParentPDG[n_gammaHit];
-                temp_gamma_Hit.hitPDG = t_gammaHitPDG[n_gammaHit];
+                temp_gamma_Hit.SetHitPDG(t_gammaHitPDG[n_gammaHit]);
 
-                temp_gamma_Hit.vtxTime = t_vtxTime;
+                temp_gamma_Hit.SetVtxT(t_vtxTime);
                 temp_gamma_Hit.isEmpty = 0;
                 if(t_gammaStartingPointX[n_gammaHit] == t_piDeath[0])
                     temp_gamma_Hit.isFromPion = 1;
@@ -780,12 +695,16 @@ int main()
 
         if(vectorHit.size() == 0)
             continue;
+
+        //this makes beta <<< 1, 1 spill is 10us, skip this event
+        if(vectorHit.at(0).GetTrueT() > 10000)
+            continue;
+
+        //sort by time
         if(vectorHit.size() != 0)
             std::sort(vectorHit.begin(), vectorHit.end(), tSort);
 
-        if(vectorHit.at(0).trueT > 10000)
-            continue;
-
+        //map<position,pair<true,time>>
         std::map<std::tuple<float,float,float>,std::pair<int,float>> cube_fired;
 
         for(auto t:vectorHit)
@@ -798,8 +717,12 @@ int main()
             cube_fired.insert(make_pair(temp_position,make_pair(1,t.GetT())));  //모든 힛들이 제대로 들어가는것 확인완료
         }
 
+        //cube cluster vector
         std::vector<Hit> cube_cluster;
-        cube_cluster.push_back(vectorHit.at(0));    //push back the first hit
+        
+        //push back the first hit
+        cube_cluster.push_back(vectorHit.at(0));
+        //erase that hit from cube_fired vector
         cube_fired.erase(std::make_tuple(cube_cluster.at(0).GetX(),cube_cluster.at(0).GetY(),cube_cluster.at(0).GetZ()));
         //cout<<"first hit: "<<cube_cluster.at(0).GetX()<<" ,"<<cube_cluster.at(0).GetY()<<" ,"<<cube_cluster.at(0).GetZ()<<", "<<cube_cluster.at(0).GetT()<<endl;
 
@@ -901,14 +824,14 @@ int main()
         Hit earliest_hit;
         earliest_hit = vectorHit.at(0);
 
-        if(earliest_hit.GetIsNeutron())
+        if(earliest_hit.IsNeutron())
         {
             if(earliest_hit.GetParentId() == -1)
                 earliest_hit.category = 1;
             if(earliest_hit.GetParentId() >= 0)
                 earliest_hit.category = 2;
         }
-        if(earliest_hit.GetIsGamma())
+        if(earliest_hit.IsGamma())
         {
             if(earliest_hit.GetParentId() == -1)
                 earliest_hit.category = 3;
@@ -921,50 +844,62 @@ int main()
 
         for(int i = 0; i < 3; i++)
         {
-            vec_piDeath_to_hit[i] = earliest_hit.hit[i]-earliest_hit.piDeath[i];
-            vec_vtx_to_piDeath[i] = earliest_hit.piDeath[i]-earliest_hit.vtxSignal[i];
-            vec_protonDeath_to_hit[i] = earliest_hit.hit[i]-earliest_hit.protonDeath[i];
-            vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.vtxSignal[i];
+            if(i == 0)
+            {
+                vec_piDeath_to_hit[i] = earliest_hit.GetX()-earliest_hit.piDeath[i];
+                vec_vtx_to_piDeath[i] = earliest_hit.piDeath[i]-earliest_hit.GetVtxX();
+                vec_protonDeath_to_hit[i] = earliest_hit.GetX()-earliest_hit.protonDeath[i];
+                vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.GetVtxX();
+            }
+            if(i == 1)
+            {
+                vec_piDeath_to_hit[i] = earliest_hit.GetY()-earliest_hit.piDeath[i];
+                vec_vtx_to_piDeath[i] = earliest_hit.piDeath[i]-earliest_hit.GetVtxY();
+                vec_protonDeath_to_hit[i] = earliest_hit.GetY()-earliest_hit.protonDeath[i];
+                vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.GetVtxY();
+            }
+            if(i == 2)
+            {
+                vec_piDeath_to_hit[i] = earliest_hit.GetZ()-earliest_hit.piDeath[i];
+                vec_vtx_to_piDeath[i] = earliest_hit.piDeath[i]-earliest_hit.GetVtxZ();
+                vec_protonDeath_to_hit[i] = earliest_hit.GetZ()-earliest_hit.protonDeath[i];
+                vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.GetVtxZ();
+            }
         }
-
-        if(earliest_hit.trackLength == 0)
-            cout<<"earliest_hit.trackLength: 0"<<endl;
-        if(earliest_hit.trackLength == 0 || earliest_hit.GetTimeWindow() == 0)  //problem of beta
-            continue;
 
         //signal
         if(earliest_hit.category == 1)
         {
-            leverarm_signal->Fill(earliest_hit.trackLength);
-            leverArm = earliest_hit.trackLength;
+            leverarm_signal->Fill(earliest_hit.GetLeverArm());
+            leverArm = earliest_hit.GetLeverArm();
             if(_1pi0p)
             {
                 angle_signal->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
-                distance_signal->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                distance_signal->Fill(GetDistance(earliest_hit.piDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit);
             }
             if(_0pi1p)
             {
                 angle_signal->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
-                distance_signal->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                distance_signal->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit);
             }
             if(_0pi0p)
             {
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_signal->Fill((earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity;
+            beta_signal->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
             TOF_signal->Fill(earliest_hit.GetTimeWindow());
             tof = earliest_hit.GetTimeWindow();
             CubeE_signal->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_signal->Fill(earliest_hit.startingPointT);
-            neutronE_signal->Fill(earliest_hit.trueE);
-            neutronE = earliest_hit.trueE;
+            neutronE_signal->Fill(earliest_hit.GetTrueE());
+            neutronE = earliest_hit.GetTrueE();
             nCubeDis_signal->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
@@ -972,37 +907,36 @@ int main()
         //secondary neutron
         if(earliest_hit.category == 2)
         {
-            leverarm_secondary_neutron->Fill(earliest_hit.trackLength);
-            leverArm = earliest_hit.trackLength;
+            leverarm_secondary_neutron->Fill(earliest_hit.GetLeverArm());
+            leverArm = earliest_hit.GetLeverArm();
             if(_1pi0p)
             {
                 angle_secondary_neutron->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
-                distance_secondary_neutron->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                distance_secondary_neutron->Fill(GetDistance(earliest_hit.piDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit);
             }
             if(_0pi1p)
             {
                 angle_secondary_neutron->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
-                distance_secondary_neutron->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                distance_secondary_neutron->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit);
             }
             if(_0pi0p)
             {
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_secondary_neutron->Fill((earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity;
+            beta_secondary_neutron->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
             TOF_secondary_neutron->Fill(earliest_hit.GetTimeWindow());
             tof = earliest_hit.GetTimeWindow();
             CubeE_secondary_neutron->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_secondary_neutron->Fill(earliest_hit.startingPointT);
-            neutronE_secondary_neutron->Fill(earliest_hit.trueE);
-            neutronE = earliest_hit.trueE;
-            num_secondary_neutron += 1;
+            neutronE_secondary_neutron->Fill(earliest_hit.GetTrueE());
+            neutronE = earliest_hit.GetTrueE();
             nCubeDis_secondary_neutron->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
@@ -1010,36 +944,36 @@ int main()
         //primary gamma 
         if(earliest_hit.category == 3)
         {
-            leverarm_primary_gamma->Fill(earliest_hit.trackLength);
-            leverArm = earliest_hit.trackLength;
+            leverarm_primary_gamma->Fill(earliest_hit.GetLeverArm());
+            leverArm = earliest_hit.GetLeverArm();
             if(_1pi0p)
             {
                 angle_primary_gamma->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
-                distance_primary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                distance_primary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit);
             }
             if(_0pi1p)
             {
                 angle_primary_gamma->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
-                distance_primary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                distance_primary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit);
             }
             if(_0pi0p)
             {
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_primary_gamma->Fill((earliest_hit.trackLength/(earliest_hit.GetTimeWindow()))/c_velocity);
-            beta = (earliest_hit.trackLength/(earliest_hit.GetTimeWindow()))/c_velocity;
+            beta_primary_gamma->Fill((earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity;
             TOF_primary_gamma->Fill(earliest_hit.GetTimeWindow());
             tof = earliest_hit.GetTimeWindow();
             CubeE_primary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             startingT_primary_gamma->Fill(earliest_hit.startingPointT);
 
-            distance_vs_beta->Fill((earliest_hit.trackLength/(earliest_hit.GetTimeWindow()))/c_velocity,earliest_hit.trackLength);
+            distance_vs_beta->Fill((earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity,earliest_hit.GetLeverArm());
             nCubeDis_primary_gamma->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
         }
@@ -1047,29 +981,29 @@ int main()
         //secondary gamma
         if(earliest_hit.category == 4)
         {
-            leverarm_secondary_gamma->Fill(earliest_hit.trackLength);
-            leverArm = earliest_hit.trackLength;
+            leverarm_secondary_gamma->Fill(earliest_hit.GetLeverArm());
+            leverArm = earliest_hit.GetLeverArm();
             if(_1pi0p)
             {
                 angle_secondary_gamma->Fill(GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_piDeath,vec_piDeath_to_hit);
-                distance_secondary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit.hit);
+                distance_secondary_gamma->Fill(GetDistance(earliest_hit.piDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.piDeath,earliest_hit);
             }
             if(_0pi1p)
             {
                 angle_secondary_gamma->Fill(GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit));
                 angle = GetAngle(vec_vtx_to_protonDeath,vec_protonDeath_to_hit);
-                distance_secondary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit.hit));
-                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit.hit);
+                distance_secondary_gamma->Fill(GetDistance(earliest_hit.protonDeath,earliest_hit));
+                distanceCHit = GetDistance(earliest_hit.protonDeath,earliest_hit);
             }
             if(_0pi0p)
             {
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_secondary_gamma->Fill((earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.trackLength/earliest_hit.GetTimeWindow())/c_velocity;
+            beta_secondary_gamma->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
             TOF_secondary_gamma->Fill(earliest_hit.GetTimeWindow());
             tof = earliest_hit.GetTimeWindow();
             CubeE_secondary_gamma->Fill(earliest_hit.GetCubeE());
@@ -1080,18 +1014,15 @@ int main()
         }
         category = earliest_hit.category;
         output_tree->Fill();
-    }       //end of event iterate
-    //_file->Close();
-    //delete _file;
+    }//end of event iterate
 
     outfile->Write();
     outfile->Close();
 
     cout<<"event loop is aone"<<endl;
     cout<<"---------------------------"<<endl;
-
-
     cout<<"making output files"<<endl;
+
     TFile * fi1 = new TFile("background.root","RECREATE");
     gStyle->SetFrameFillColor(0);
 
@@ -1268,7 +1199,7 @@ int main()
     can->SaveAs("TOF.pdf");
     can->Clear();
     //}
-    //
+    
     //CubeE{
     CubeE_signal->Write();
     CubeE_signal->SetLineColor(2);
@@ -1299,7 +1230,6 @@ int main()
     legend->Draw();
     can->SaveAs("CubeE.pdf");
     can->Clear();
-
     //}
 
     //nCube{
@@ -1334,28 +1264,8 @@ int main()
     can->SaveAs("nCubeDis.pdf");
     can->Clear();
     //}
-    //neutronE{
-    neutronE_signal->Write();
-    neutronE_signal->SetLineColor(2);
-    neutronE_signal->SetStats(0);
-    neutronE_signal->Scale(1/neutronE_signal->Integral(),"nosw2");
-    neutronE_signal->GetYaxis()->SetRangeUser(0,1);
-    neutronE_signal->SetTitle("number of cube");
-    neutronE_signal->Draw();
-
-    neutronE_secondary_neutron->Write();
-    neutronE_secondary_neutron->SetLineColor(4);
-    neutronE_secondary_neutron->SetStats(0);
-    neutronE_secondary_neutron->Scale(1/neutronE_secondary_neutron->Integral(),"nosw2");
-    neutronE_secondary_neutron->Draw("same");
-
-    legend->Draw();
-    can->SaveAs("neutronE.pdf");
-    can->Clear();
-    //}
 
     fi1->Close();
-
 
     cout<<"making output files is done"<<endl;
     cout<<"---------------------------"<<endl;
