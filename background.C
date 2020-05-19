@@ -268,30 +268,6 @@ class Hit
         ~Hit() {}
 };
 
-class Cube
-{
-    private:
-        float X;
-        float Y;
-        float Z;
-        float CubeE;
-    public:
-        void SetX(float X){this->X = X;};
-        void SetY(float Y){this->Y = Y;};
-        void SetZ(float Z){this->Z = Z;};
-        void SetCubeE(float CubeE){this->CubeE = CubeE;};
-        float GetX(){return this->X;};
-        float GetY(){return this->Y;};
-        float GetZ(){return this->Z;};
-        float GetCubeE(){return this->CubeE;};
-
-    Cube():
-        X(0),
-        Y(0),
-        Z(0) {}
-    ~Cube() {}
-};
-
 bool tSort(Hit Hit1, Hit Hit2)
 {
     return(Hit1.GetT() < Hit2.GetT());
