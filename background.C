@@ -1,3 +1,4 @@
+#include <ctime>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,6 +56,10 @@ float cubeE;
 float nCube;
 float category;
 float neutrinoE;
+float hitPDG;
+
+float neutronE;
+float neutronAngle;
 
 using namespace std;
 //histograms{
@@ -66,7 +71,6 @@ TH1F * beta_signal = new TH1F("beta_signal","beta of signal",30,0,1.5);
 TH1F * distance_signal = new TH1F("distance_signal","distance b/w C and signal hit",20,0,200);
 TH1F * TOF_signal = new TH1F("TOF_signal","time of flight of signal", 25,0,25);
 TH1F * CubeE_signal = new TH1F("CubeE_signal", "CubeE of signal", 30, 0, 15);
-TH1F * startingT_signal = new  TH1F("staringT_signal", "startingT of signal",250,0,5);
 TH1F * nCubeDis_signal = new TH1F("nCubeDis_signal","number of cubes, signal", 50, 0, 100);
 //}
 //secondary neutron{ 
@@ -76,7 +80,6 @@ TH1F * beta_secondary_neutron = new TH1F("beta_secondary_neutron","beta of secon
 TH1F * distance_secondary_neutron = new TH1F("distance_secondary_neutron","distance b/w C and secondary_neutron hit",20,0,200);
 TH1F * TOF_secondary_neutron = new TH1F("TOF_secondary_neutron","time of flight of secondary_neutron", 25,0,25);
 TH1F * CubeE_secondary_neutron = new TH1F("CubeE_secondary_neutron", "CubeE of secondary_neutron", 30, 0, 15);
-TH1F * startingT_secondary_neutron = new  TH1F("staringT_secondary_neutron", "startingT of secondary neutron",250,0,5);
 TH1F * nCubeDis_secondary_neutron = new TH1F("nCubeDis_secondary_neutron","number of cubes, secondary neutron", 50, 0, 100);
 //}
 
@@ -87,7 +90,6 @@ TH1F * beta_primary_gamma = new TH1F("beta_primary_gamma","beta of primary_gamma
 TH1F * distance_primary_gamma = new TH1F("distance_primary_gamma","distance b/w C and primary_gamma hit",20,0,200);
 TH1F * TOF_primary_gamma = new TH1F("TOF_primary_gamma","time of flight of primary_gamma", 25,0,25);
 TH1F * CubeE_primary_gamma = new TH1F("CubeE_primary_gamma", "CubeE of primary_gamma", 30, 0, 15);
-TH1F * startingT_primary_gamma = new  TH1F("staringT_primary_gamma", "startingT of peiamry_gamma",250,0,5);
 TH1F * nCubeDis_primary_gamma = new TH1F("nCubeDis_primary_gamma","number of cubes, primary gamma", 50, 0, 100);
 //}
 
@@ -98,7 +100,6 @@ TH1F * beta_secondary_gamma = new TH1F("beta_secondary_gamma","beta of secondary
 TH1F * distance_secondary_gamma = new TH1F("distance_secondary_gamma","distance b/w C and secondary_gamma hit",20,0,200);
 TH1F * TOF_secondary_gamma = new TH1F("TOF_secondary_gamma","time of flight of secondary_gamma", 25,0,25);
 TH1F * CubeE_secondary_gamma = new TH1F("CubeE_secondary_gamma", "CubeE of secondary_gamma", 30, 0, 15);
-TH1F * startingT_secondary_gamma = new  TH1F("staringT_secondary_gamma", "startingT of secondary_gamma",250,0,5);
 TH1F * nCubeDis_secondary_gamma = new TH1F("nCubeDis_secondary_gamma","number of cubes, secondary gamma", 50, 0, 100);
 //}
 
@@ -219,8 +220,8 @@ class Hit
         bool isEmpty;
 
         Hit():
-            timeWindow(0),
-            timeWindowSmear(0),    
+            timeWindow(-1),
+            timeWindowSmear(-1),    
             X(0),
             Y(0),
             Z(0),
@@ -320,7 +321,10 @@ int main()
     output_tree->Branch("category", &category, "category");
     output_tree->Branch("nCube", &nCube, "nCube");
     output_tree->Branch("neutrinoE", &neutrinoE, "neutrinoE");
+    output_tree->Branch("hitPDG", &hitPDG, "hitPDG");
 
+    output_tree->Branch("neutronE", &neutronE, "neutronE");
+    output_tree->Branch("neutronAngle", &neutronAngle, "neutronAngle");
 
     TChain tree("tree");
     cout<<"---------------------------"<<endl;
@@ -405,6 +409,7 @@ int main()
 
     cout<<"file loading is done"<<endl;
     cout<<"---------------------------"<<endl;
+    cout<<"total entries: "<<nevents<<endl;
     cout<<"event loop starts"<<endl;
     cout<<endl;
 
@@ -414,7 +419,7 @@ int main()
     {
         tree.GetEntry(event);
 
-        cout<<"\033[1Aevent: "<<(double)(event*100/nevents)<<"%\033[1000D"<<endl;
+        cout<<"\033[1Aevent: "<<(double)(event*100/nevents)<<"% ,"<<event<<"\033[1000D"<<endl;
         leverArm = -1000;
         angle = -1000;
         beta = -1000;
@@ -423,7 +428,10 @@ int main()
         cubeE = -1000;
         category = -1000;
         nCube = -1000;
+        hitPDG = -1000;
 
+        neutronE = -1000;
+        neutronAngle = -1000;
 
         //out of fiducial volume
         if(abs(t_vtx[0]) > 50 || abs(t_vtx[1]) > 50 || abs(t_vtx[2]) > 50)
@@ -463,6 +471,7 @@ int main()
         bool _1pi0p = false;
         bool _0pi1p = false;
         bool _0pi0p = false;
+
         if(num_pi == 1 && num_proton == 0)
             _1pi0p = true;
         if(num_pi == 0 && num_proton == 1)
@@ -472,6 +481,9 @@ int main()
 
         if(!_1pi0p && !_0pi1p && !_0pi0p)
             continue;
+
+//        if(_0pi1p || _0pi0p)    //only looking for 1pi0p channel
+//            continue;
 
         Hit temp_neutron_Hit;   
         std::vector<Hit> vectorHit;    //vector of all neutron+gamma hits
@@ -667,9 +679,9 @@ int main()
         for(auto t:vectorHit)
         {
             //cout<<"x,y,z: "<<t.GetX()<<", "<<t.GetY()<<", "<<t.GetZ()<<endl;
-            //XYPlane_allhits->Fill(t.GetX(),t.GetY());
-            //YZPlane_allhits->Fill(t.GetY(),t.GetZ());
-            //XZPlane_allhits->Fill(t.GetX(),t.GetZ());
+            XYPlane_allhits->Fill(t.GetX(),t.GetY());
+            YZPlane_allhits->Fill(t.GetY(),t.GetZ());
+            XZPlane_allhits->Fill(t.GetX(),t.GetZ());
             std::tuple<float, float, float> temp_position = std::make_tuple(t.GetX(),t.GetY(),t.GetZ());
             cube_fired.insert(make_pair(temp_position,make_pair(1,t.GetT())));  //모든 힛들이 제대로 들어가는것 확인완료
         }
@@ -736,12 +748,12 @@ int main()
                 size_check = false;
         }
 
-        //for(auto t:cube_cluster)
-        //{
-        //    cube_XYPlane->Fill(t.GetX(),t.GetY());
-        //    cube_XZPlane->Fill(t.GetX(),t.GetZ());
-        //    cube_YZPlane->Fill(t.GetY(),t.GetZ());
-        //}
+        for(auto t:cube_cluster)
+        {
+            cube_XYPlane->Fill(t.GetX(),t.GetY());
+            cube_XZPlane->Fill(t.GetX(),t.GetZ());
+            cube_YZPlane->Fill(t.GetY(),t.GetZ());
+        }
 
         //gStyle->SetFrameFillColor(1);
         //if(XYPlane_allhits->GetEntries() != 0)
@@ -784,7 +796,9 @@ int main()
         if(earliest_hit.IsNeutron())
         {
             if(earliest_hit.GetParentId() == -1)
+            {
                 earliest_hit.category = 1;
+            }
             if(earliest_hit.GetParentId() >= 0)
                 earliest_hit.category = 2;
         }
@@ -797,6 +811,8 @@ int main()
         }
 
         if(earliest_hit.category == -1000)
+            continue;
+        if(earliest_hit.GetHitPDG() > 10000)
             continue;
 
         for(int i = 0; i < 3; i++)
@@ -823,6 +839,12 @@ int main()
                 vec_vtx_to_protonDeath[i] = earliest_hit.protonDeath[i]-earliest_hit.GetVtxZ();
             }
         }
+
+        float Z[3] = {0,0,1};
+        float vec_vtx_to_hit[3];
+        vec_vtx_to_hit[0] = earliest_hit.GetX() - earliest_hit.GetVtxX();
+        vec_vtx_to_hit[1] = earliest_hit.GetY() - earliest_hit.GetVtxY();
+        vec_vtx_to_hit[2] = earliest_hit.GetZ() - earliest_hit.GetVtxZ();
 
         //signal
         if(earliest_hit.category == 1)
@@ -854,9 +876,12 @@ int main()
             tof = earliest_hit.GetTimeWindow();
             CubeE_signal->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
-            startingT_signal->Fill(earliest_hit.startingPointT);
             nCubeDis_signal->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
+            hitPDG = earliest_hit.GetHitPDG();
+
+            neutronE = earliest_hit.GetTrueE();
+            neutronAngle = GetAngle(Z,vec_vtx_to_hit);
         }
 
         //secondary neutron
@@ -889,9 +914,12 @@ int main()
             tof = earliest_hit.GetTimeWindow();
             CubeE_secondary_neutron->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
-            startingT_secondary_neutron->Fill(earliest_hit.startingPointT);
             nCubeDis_secondary_neutron->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
+            hitPDG = earliest_hit.GetHitPDG();
+
+            neutronE = earliest_hit.GetTrueE();
+            neutronAngle = GetAngle(Z,vec_vtx_to_hit);
         }
 
         //primary gamma 
@@ -924,9 +952,9 @@ int main()
             tof = earliest_hit.GetTimeWindow();
             CubeE_primary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
-            startingT_primary_gamma->Fill(earliest_hit.startingPointT);
             nCubeDis_primary_gamma->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
+            hitPDG = earliest_hit.GetHitPDG();
         }
 
         //secondary gamma
@@ -959,9 +987,9 @@ int main()
             tof = earliest_hit.GetTimeWindow();
             CubeE_secondary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
-            startingT_secondary_gamma->Fill(earliest_hit.startingPointT);
             nCubeDis_secondary_gamma->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
+            hitPDG = earliest_hit.GetHitPDG();
         }
         category = earliest_hit.category;
         output_tree->Fill();
