@@ -47,19 +47,6 @@
 #include <TStyle.h>
 #include <TROOT.h>
 
-float leverArm;
-float angle;
-float beta;
-float distanceCHit;
-float tof;
-float cubeE;
-float nCube;
-float category;
-float neutrinoE;
-float hitPDG;
-
-float neutronE;
-float neutronAngle;
 
 using namespace std;
 //histograms{
@@ -145,14 +132,15 @@ class Hit
         float energyDeposit;        // energy deposited by the neutron
         bool isNeutron;
         bool isGamma;
+        float category;     //kind of hit(1: signal; 2: secondary neutron; 3: primary gamma; 4: secondary gamma)
 
     public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        void SetTimeWindow(float timeWindow){this->timeWindow = timeWindow;};
-        float GetTimeWindow(){return this->timeWindow;};
+        void SetTOF(float timeWindow){this->timeWindow = timeWindow;};
+        float GetTOF(){return this->timeWindow;};
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        void SetTimeWindowSmear(float timeWindowSmear){this->timeWindowSmear = timeWindowSmear;};
-        float GetTimeWindowSmear(){return this->timeWindowSmear;};
+        void SetTOFSmear(float timeWindowSmear){this->timeWindowSmear = timeWindowSmear;};
+        float GetTOFSmear(){return this->timeWindowSmear;};
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
         void SetX(float X){this->X = X;};
         float GetX(){return this->X;};
@@ -205,19 +193,16 @@ class Hit
         void SetIsGamma(bool isGamma){this->isGamma = isGamma;};
         bool IsGamma(){return this->isGamma;};
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        float startingPointT;
-        float category;     //kind of hit(1: signal; 2: secondary neutron; 3: primary gamma; 4: secondary gamma)
+        void SetCategory(float category){this->category = category;};
+        float GetCategory(){return this->category;};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
         float piDeath[3];      //pion death
         float protonDeath[3];      //proton Death
 
         bool isFromPion;
         bool isFromProton;
 
-        float startingPoint[3];
-
         int parentPdg;   // PDG of parent
-
-        bool isEmpty;
 
         Hit():
             timeWindow(-1),
@@ -235,10 +220,8 @@ class Hit
             cubeE(0),
             trueT(0), 
             hitPDG(0),
-            startingPointT(0),
             parentPdg(123123123),
             category(-1),
-            isEmpty(1),
             isFromPion(0),
             isFromProton(0)
     {
@@ -246,7 +229,6 @@ class Hit
         {
             this->piDeath[i] = 0;   
             this->protonDeath[i] = 0; 
-            this->startingPoint[i] = 0;
         }
     }
         ~Hit() {}
@@ -287,151 +269,160 @@ double GetDistance(float a[], Hit hit)
 
 int main()
 {
-    int filenum;
-
-    cout<<"filenum :"<<endl;
-    cin>>filenum;
-
     gErrorIgnoreLevel = kWarning;
-    //if(num_fspi == 1)
-    //{
-    //    gSystem->mkdir("pion");
-    //    gSystem->cd("pion");
-    //}
-    //if(num_fsp == 1)
-    //{
-    //    gSystem->mkdir("proton");
-    //    gSystem->cd("proton");
-    //}
-    //if(num_fsp == 0 && num_fspi == 0)
-    //{
-    //    gSystem->mkdir("0pi0p");
-    //    gSystem->cd("0pi0p");
-    //}
-
-    TFile * outfile = new TFile("variables.root","RECREATE");
-    TTree * output_tree = new TTree("output_tree", "output_tree");
-
-    output_tree->Branch("leverArm",&leverArm, "lever arm");
-    output_tree->Branch("angle",&angle, "angle between C and hit");
-    output_tree->Branch("beta",&beta, "beta");
-    output_tree->Branch("distanceCHit",&distanceCHit, "distance C and hit");
-    output_tree->Branch("tof",&tof, "time of flight");
-    output_tree->Branch("cubeE",&cubeE, "CubeE");
-    output_tree->Branch("category", &category, "category");
-    output_tree->Branch("nCube", &nCube, "nCube");
-    output_tree->Branch("neutrinoE", &neutrinoE, "neutrinoE");
-    output_tree->Branch("hitPDG", &hitPDG, "hitPDG");
-
-    output_tree->Branch("neutronE", &neutronE, "neutronE");
-    output_tree->Branch("neutronAngle", &neutronAngle, "neutronAngle");
 
     TChain tree("tree");
     cout<<"---------------------------"<<endl;
     cout<<"file loading..."<<endl;
 
+    int filenum;
+    cout<<"filenum :"<<endl;
+    cin>>filenum;
+
     for(int i = 1; i != filenum+1; i++)
-    {
-        //cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
-        string file = Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i);
+    { //cout<<"\033[1APROD"<<101<<": "<<(double)(i*100/filenum)<<"%\033[1000D"<<endl;
+        string file = Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion_wNuE.root",i);
+        //string file = Form("/Users/gwon/Geo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i);
         //string file = Form("/pnfs/dune/persistent/users/gyang/3DST/dump/standardGeo12/PROD101/RHC_%d_wGamma_2ndVersion.root",i);
         tree.Add(TString(file));
     }
-
     //tree.Add("/Users/gwon/Geo12/PROD101/RHC_*_wGamma_2ndVersion.root");
 
-    float t_neutronHitX[1000], t_neutronHitY[1000], t_neutronHitZ[1000];
-    float t_neutronStartingPointX[1000], t_neutronStartingPointY[1000], t_neutronStartingPointZ[1000], t_neutronStartingPointT[1000];
-    float t_neutronHitT[1000], t_neutronParentId[1000], t_neutronParentPDG[1000];
-    float t_neutronHitE[1000], t_neutronTrueE[1000];
-    float t_neutronCubeE[1000];
-    float t_neutronHitSmearT[1000];
-    float t_neutronHitPDG[1000];
-
-    float t_vtx[3], t_vtxTime;
-    float t_piDeath[3], t_protonDeath[3];
-
+    //vectors I defined
     float vec_piDeath_to_hit[3];
     float vec_protonDeath_to_hit[3];
     float vec_vtx_to_piDeath[3];
     float vec_vtx_to_protonDeath[3];
 
-    float t_gammaHitX[1000], t_gammaHitY[1000], t_gammaHitZ[1000];
-    float t_gammaStartingPointX[1000], t_gammaStartingPointY[1000], t_gammaStartingPointZ[1000], t_gammaStartingPointT[1000];
-    float t_gammaHitT[1000], t_gammaParentId[1000], t_gammaParentPDG[1000];
-    float t_gammaHitE[1000]; 
-    float t_gammaCubeE[1000];
-    float t_gammaHitSmearT[1000];
-    float t_gammaHitPDG[1000];
-
-    int PDG = 0;
-    int t_nFS, t_fsPdg[1000];
-
-    tree.SetBranchAddress("neutronHitX", &t_neutronHitX);
-    tree.SetBranchAddress("neutronHitY", &t_neutronHitY);
-    tree.SetBranchAddress("neutronHitZ", &t_neutronHitZ);
-    tree.SetBranchAddress("neutronStartingPointX", &t_neutronStartingPointX);
-    tree.SetBranchAddress("neutronStartingPointY", &t_neutronStartingPointY);
-    tree.SetBranchAddress("neutronStartingPointZ", &t_neutronStartingPointZ);
-    tree.SetBranchAddress("neutronStartingPointT", &t_neutronStartingPointT);
-    tree.SetBranchAddress("neutronHitT", &t_neutronHitT);
-    tree.SetBranchAddress("neutronParentId", &t_neutronParentId);
-    tree.SetBranchAddress("neutronParentPDG", &t_neutronParentPDG);
-    tree.SetBranchAddress("neutronHitE", &t_neutronHitE);
-    tree.SetBranchAddress("neutronTrueE", &t_neutronTrueE);
-    tree.SetBranchAddress("neutronCubeE", &t_neutronCubeE);
-    tree.SetBranchAddress("neutronHitSmearT", &t_neutronHitSmearT);
-    tree.SetBranchAddress("neutronHitPDG", &t_neutronHitPDG);
-    tree.SetBranchAddress("vtx", &t_vtx);
-    tree.SetBranchAddress("vtxTime", &t_vtxTime);
-    tree.SetBranchAddress("nFS", &t_nFS);
-    tree.SetBranchAddress("fsPdg", &t_fsPdg);
-    tree.SetBranchAddress("piDeath", &t_piDeath);
-    tree.SetBranchAddress("protonDeath", &t_protonDeath);
-
-    tree.SetBranchAddress("gammaHitX", &t_gammaHitX);
-    tree.SetBranchAddress("gammaHitY", &t_gammaHitY);
-    tree.SetBranchAddress("gammaHitZ", &t_gammaHitZ);
-    tree.SetBranchAddress("gammaStartingPointX", &t_gammaStartingPointX);
-    tree.SetBranchAddress("gammaStartingPointY", &t_gammaStartingPointY);
-    tree.SetBranchAddress("gammaStartingPointZ", &t_gammaStartingPointZ);
-    tree.SetBranchAddress("gammaStartingPointT", &t_gammaStartingPointT);
-    tree.SetBranchAddress("gammaHitT", &t_gammaHitT);
-    tree.SetBranchAddress("gammaParentId", &t_gammaParentId);
-    tree.SetBranchAddress("gammaParentPDG", &t_gammaParentPDG);
-    tree.SetBranchAddress("gammaHitE", &t_gammaHitE);
-    tree.SetBranchAddress("gammaCubeE", &t_gammaCubeE);
-    tree.SetBranchAddress("gammaHitT", &t_gammaHitT);
-    tree.SetBranchAddress("gammaHitSmearT", &t_gammaHitSmearT);
-    tree.SetBranchAddress("gammaHitPDG", &t_gammaHitPDG);
-
-    int nevents = tree.GetEntries();
+    //SetBranchAddress
+    int t_ifileNo; tree.SetBranchAddress("t_ifileNo",&t_ifileNo);
+    int t_ievt; tree.SetBranchAddress("t_ievt",&t_ievt);
+    float t_p3lep[3]; tree.SetBranchAddress("t_p3lep",&t_p3lep);
+    float t_p3pi[3]; tree.SetBranchAddress("t_p3pi",&t_p3pi);
+    float t_p3proton[3]; tree.SetBranchAddress("t_p3proton",&t_p3proton);
+    float t_vtx[3]; tree.SetBranchAddress("t_vtx",&t_vtx);
+    float t_lepDeath[3]; tree.SetBranchAddress("t_lepDeath",&t_lepDeath);
+    int t_lepPdg; tree.SetBranchAddress("t_lepPdg",&t_lepPdg);
+    float t_lepKE; tree.SetBranchAddress("t_lepKE",&t_lepKE);
+    int t_piPdg; tree.SetBranchAddress("t_piPdg",&t_piPdg);
+    float t_piKE; tree.SetBranchAddress("t_piKE",&t_piKE);
+    float t_piDeath[3]; tree.SetBranchAddress("t_piDeath",&t_piDeath);
+    int t_protonPdg; tree.SetBranchAddress("t_protonPdg",&t_protonPdg);
+    float t_protonKE; tree.SetBranchAddress("t_protonKE",&t_protonKE);
+    float t_protonDeath[3]; tree.SetBranchAddress("t_protonDeath",&t_protonDeath);
+    int t_muexit; tree.SetBranchAddress("t_muexit",&t_muexit);
+    float t_muonExitPt[3]; tree.SetBranchAddress("t_muonExitPt",&t_muonExitPt);
+    float t_muonExitMom[3]; tree.SetBranchAddress("t_muonExitMom",&t_muonExitMom);
+    int t_muonReco; tree.SetBranchAddress("t_muonReco",&t_muonReco);
+    float t_muGArLen; tree.SetBranchAddress("t_muGArLen",&t_muGArLen);
+    int t_piexit; tree.SetBranchAddress("t_piexit",&t_piexit);
+    float t_pionExitPt[3]; tree.SetBranchAddress("t_pionExitPt",&t_pionExitPt);
+    float t_pionExitMom[3]; tree.SetBranchAddress("t_pionExitMom",&t_pionExitMom);
+    int t_pionReco; tree.SetBranchAddress("t_pionReco",&t_pionReco);
+    float t_piGArLen; tree.SetBranchAddress("t_piGArLen",&t_piGArLen);
+    int t_protonexit; tree.SetBranchAddress("t_protonexit",&t_protonexit);
+    float t_protonExitPt[3]; tree.SetBranchAddress("t_protonExitPt",&t_protonExitPt);
+    float t_protonExitMom[3]; tree.SetBranchAddress("t_protonExitMom",&t_protonExitMom);
+    int t_protonReco; tree.SetBranchAddress("t_protonReco",&t_protonReco);
+    float t_protonGArLen; tree.SetBranchAddress("t_protonGArLen",&t_protonGArLen);
+    float t_hadTot; tree.SetBranchAddress("t_hadTot",&t_hadTot);
+    float t_hadTot_TPC; tree.SetBranchAddress("t_hadTot_TPC",&t_hadTot_TPC);
+    float t_hadTot_3DST; tree.SetBranchAddress("t_hadTot_3DST",&t_hadTot_3DST);
+    float t_hadTot_ECAL; tree.SetBranchAddress("t_hadTot_ECAL",&t_hadTot_ECAL);
+    float t_hadTot_allECAL; tree.SetBranchAddress("t_hadTot_allECAL",&t_hadTot_allECAL);
+    float t_hadTot_leak; tree.SetBranchAddress("t_hadTot_leak",&t_hadTot_leak);
+    float t_hadCollar; tree.SetBranchAddress("t_hadCollar",&t_hadCollar);
+    float t_hadCollar_side[4]; tree.SetBranchAddress("t_hadCollar_side",&t_hadCollar_side);
+    float t_lepCollar_side[4]; tree.SetBranchAddress("t_lepCollar_side",&t_lepCollar_side);
+    int t_nFS; tree.SetBranchAddress("t_nFS",&t_nFS);
+    int t_fsPdg[1000]; tree.SetBranchAddress("t_fsPdg",&t_fsPdg);
+    float t_fsPx[1000]; tree.SetBranchAddress("t_fsPx",&t_fsPx);
+    float t_fsPy[1000]; tree.SetBranchAddress("t_fsPy",&t_fsPy);
+    float t_fsPz[1000]; tree.SetBranchAddress("t_fsPz",&t_fsPz);
+    float t_fsE[1000]; tree.SetBranchAddress("t_fsE",&t_fsE);
+    float t_fsTrkLen[1000]; tree.SetBranchAddress("t_fsTrkLen",&t_fsTrkLen);
+    float t_neutronHitX[1000]; tree.SetBranchAddress("t_neutronHitX",&t_neutronHitX);
+    float t_neutronHitY[1000]; tree.SetBranchAddress("t_neutronHitY",&t_neutronHitY);
+    float t_neutronHitZ[1000]; tree.SetBranchAddress("t_neutronHitZ",&t_neutronHitZ);
+    float t_neutronHitT[1000]; tree.SetBranchAddress("t_neutronHitT",&t_neutronHitT);
+    float t_neutronHitSmearT[1000]; tree.SetBranchAddress("t_neutronHitSmearT",&t_neutronHitSmearT);
+    float t_neutronHitE[1000]; tree.SetBranchAddress("t_neutronHitE",&t_neutronHitE);
+    float t_neutronCubeE[1000]; tree.SetBranchAddress("t_neutronCubeE",&t_neutronCubeE);
+    float t_neutronRecoE[1000]; tree.SetBranchAddress("t_neutronRecoE",&t_neutronRecoE);
+    float t_neutronHitPDG[1000]; tree.SetBranchAddress("t_neutronHitPDG",&t_neutronHitPDG);
+    float t_neutronTrueE[1000]; tree.SetBranchAddress("t_neutronTrueE",&t_neutronTrueE);
+    float t_neutronParentId[1000]; tree.SetBranchAddress("t_neutronParentId",&t_neutronParentId);
+    float t_neutronParentPDG[1000]; tree.SetBranchAddress("t_neutronParentPDG",&t_neutronParentPDG);
+    float t_neutronStartingPointX[1000]; tree.SetBranchAddress("t_neutronStartingPointX",&t_neutronStartingPointX);
+    float t_neutronStartingPointY[1000]; tree.SetBranchAddress("t_neutronStartingPointY",&t_neutronStartingPointY);
+    float t_neutronStartingPointZ[1000]; tree.SetBranchAddress("t_neutronStartingPointZ",&t_neutronStartingPointZ);
+    float t_neutronStartingPointT[1000]; tree.SetBranchAddress("t_neutronStartingPointT",&t_neutronStartingPointT);
+    float t_gammaHitX[1000]; tree.SetBranchAddress("t_gammaHitX",&t_gammaHitX);
+    float t_gammaHitY[1000]; tree.SetBranchAddress("t_gammaHitY",&t_gammaHitY);
+    float t_gammaHitZ[1000]; tree.SetBranchAddress("t_gammaHitZ",&t_gammaHitZ);
+    float t_gammaHitT[1000]; tree.SetBranchAddress("t_gammaHitT",&t_gammaHitT);
+    float t_gammaHitSmearT[1000]; tree.SetBranchAddress("t_gammaHitSmearT",&t_gammaHitSmearT);
+    float t_gammaHitE[1000]; tree.SetBranchAddress("t_gammaHitE",&t_gammaHitE);
+    float t_gammaCubeE[1000]; tree.SetBranchAddress("t_gammaCubeE",&t_gammaCubeE);
+    float t_gammaRecoE[1000]; tree.SetBranchAddress("t_gammaRecoE",&t_gammaRecoE);
+    float t_gammaHitPDG[1000]; tree.SetBranchAddress("t_gammaHitPDG",&t_gammaHitPDG);
+    float t_gammaTrueE[1000]; tree.SetBranchAddress("t_gammaTrueE",&t_gammaTrueE);
+    float t_gammaParentId[1000]; tree.SetBranchAddress("t_gammaParentId",&t_gammaParentId);
+    float t_gammaParentPDG[1000]; tree.SetBranchAddress("t_gammaParentPDG",&t_gammaParentPDG);
+    float t_gammaStartingPointX[1000]; tree.SetBranchAddress("t_gammaStartingPointX",&t_gammaStartingPointX);
+    float t_gammaStartingPointY[1000]; tree.SetBranchAddress("t_gammaStartingPointY",&t_gammaStartingPointY);
+    float t_gammaStartingPointZ[1000]; tree.SetBranchAddress("t_gammaStartingPointZ",&t_gammaStartingPointZ);
+    float t_gammaStartingPointT[1000]; tree.SetBranchAddress("t_gammaStartingPointT",&t_gammaStartingPointT);
+    float t_vtxTime; tree.SetBranchAddress("t_vtxTime",&t_vtxTime);
+    float t_hitLocationX[1000]; tree.SetBranchAddress("t_hitLocationX",&t_hitLocationX);
+    float t_hitLocationY[1000]; tree.SetBranchAddress("t_hitLocationY",&t_hitLocationY);
+    float t_hitLocationZ[1000]; tree.SetBranchAddress("t_hitLocationZ",&t_hitLocationZ);
+    float t_hitE[1000]; tree.SetBranchAddress("t_hitE",&t_hitE);
+    float t_hitT[1000]; tree.SetBranchAddress("t_hitT",&t_hitT);
+    float t_NuEnergy; tree.SetBranchAddress("t_NuEnergy",&t_NuEnergy);
 
     cout<<"file loading is done"<<endl;
     cout<<"---------------------------"<<endl;
-    cout<<"total entries: "<<nevents<<endl;
+    cout<<"total entries: "<<tree.GetEntries()<<endl;
     cout<<"event loop starts"<<endl;
     cout<<endl;
 
-    int temp = 9907;
-    for(int event = 0; event < nevents; event++)
-        //for(int event = temp; event < temp+1; event++)
+    TFile * outfile = new TFile("variables.root","RECREATE");
+    TTree * output_tree = new TTree("output_tree", "output_tree");
+
+    //variable for output root file
+    float leverArm; output_tree->Branch("leverArm",&leverArm, "lever arm");
+    float angle; output_tree->Branch("angle",&angle, "angle between C and hit");
+    float beta; output_tree->Branch("beta",&beta, "beta");
+    float distanceCHit; output_tree->Branch("distanceCHit",&distanceCHit, "distance C and hit");
+    float tof; output_tree->Branch("tof",&tof, "time of flight");
+    float cubeE; output_tree->Branch("cubeE",&cubeE, "CubeE");
+    float nCube; output_tree->Branch("nCube", &nCube, "nCube");
+    float category; output_tree->Branch("category", &category, "category");
+    float neutrinoE; output_tree->Branch("neutrinoE", &neutrinoE, "neutrinoE");
+    float hitPDG; output_tree->Branch("hitPDG", &hitPDG, "hitPDG");
+    float neutronE; output_tree->Branch("neutronE", &neutronE, "neutronE");
+    float neutronAngle; output_tree->Branch("neutronAngle", &neutronAngle, "neutronAngle");
+    float nutrinoE; output_tree->Branch("neutrinoE", &neutrinoE, "neutrinoE");            
+
+    for(int event = 0; event < tree.GetEntries(); event++)
     {
         tree.GetEntry(event);
 
-        cout<<"\033[1Aevent: "<<(double)(event*100/nevents)<<"% ,"<<event<<"\033[1000D"<<endl;
+        cout<<"\033[1Aevent: "<<(double)(event*100/tree.GetEntries())<<"% ,"<<event<<"\033[1000D"<<endl;
         leverArm = -1000;
         angle = -1000;
         beta = -1000;
         distanceCHit = -1000;
         tof = -1000;
         cubeE = -1000;
-        category = -1000;
         nCube = -1000;
+        category = -1000;
+        neutrinoE = -1000;
         hitPDG = -1000;
-
         neutronE = -1000;
         neutronAngle = -1000;
+        nutrinoE = -1000;
 
         //out of fiducial volume
         if(abs(t_vtx[0]) > 50 || abs(t_vtx[1]) > 50 || abs(t_vtx[2]) > 50)
@@ -482,8 +473,8 @@ int main()
         if(!_1pi0p && !_0pi1p && !_0pi0p)
             continue;
 
-//        if(_0pi1p || _0pi0p)    //only looking for 1pi0p channel
-//            continue;
+        //        if(_0pi1p || _0pi0p)    //only looking for 1pi0p channel
+        //            continue;
 
         Hit temp_neutron_Hit;   
         std::vector<Hit> vectorHit;    //vector of all neutron+gamma hits
@@ -514,18 +505,18 @@ int main()
                     pow(t_neutronHitZ[n_neutronHit] - t_vtx[2],2),0.5);
 
             //calculate signal window; time of flight
-            float signalWindow = t_neutronHitT[n_neutronHit] - t_vtxTime - 1;
-            float signalWindowSmear = t_neutronHitSmearT[n_neutronHit] - t_vtxTime;
+            float tof = t_neutronHitT[n_neutronHit] - t_vtxTime - 1;
+            float tofSmear = t_neutronHitSmearT[n_neutronHit] - t_vtxTime - 1;
 
             //Fix a bug from edep-sim
-            if(signalWindow == 1)
-                signalWindow = 0.5;
+            if(tof == 1)
+                tof = 0.5;
 
 
-            if(signalWindow > 0)
+            if(tof > 0)
             {
-                temp_neutron_Hit.SetTimeWindow(signalWindow);
-                temp_neutron_Hit.SetTimeWindowSmear(signalWindowSmear);
+                temp_neutron_Hit.SetTOF(tof);
+                temp_neutron_Hit.SetTOFSmear(tofSmear);
                 temp_neutron_Hit.SetLeverArm(leverArm);
                 temp_neutron_Hit.SetEnergyDeposit(t_neutronHitE[n_neutronHit]);
 
@@ -545,16 +536,12 @@ int main()
                 temp_neutron_Hit.SetTrueE(t_neutronTrueE[n_neutronHit]);
                 temp_neutron_Hit.SetCubeE(t_neutronCubeE[n_neutronHit]);
 
-                temp_neutron_Hit.startingPoint[0] = t_neutronStartingPointX[n_neutronHit];
-                temp_neutron_Hit.startingPoint[1] = t_neutronStartingPointY[n_neutronHit];
-                temp_neutron_Hit.startingPoint[2] = t_neutronStartingPointZ[n_neutronHit];
 
                 temp_neutron_Hit.SetParentId(t_neutronParentId[n_neutronHit]);
                 temp_neutron_Hit.parentPdg = t_neutronParentPDG[n_neutronHit];
                 temp_neutron_Hit.SetHitPDG(t_neutronHitPDG[n_neutronHit]);
 
                 temp_neutron_Hit.SetVtxT(t_vtxTime);
-                temp_neutron_Hit.isEmpty = 0;
                 if(t_neutronStartingPointX[n_neutronHit] == t_piDeath[0])
                     temp_neutron_Hit.isFromPion = 1;
                 else
@@ -602,18 +589,18 @@ int main()
                     pow(t_gammaHitZ[n_gammaHit] - t_vtx[2],2),0.5);
 
             //calculate signal window; time of flight
-            float signalWindow = t_gammaHitT[n_gammaHit] - t_vtxTime - 1;
-            float signalWindowSmear = t_gammaHitSmearT[n_gammaHit] - t_vtxTime;
+            float tof = t_gammaHitT[n_gammaHit] - t_vtxTime - 1;
+            float tofSmear = t_gammaHitSmearT[n_gammaHit] - t_vtxTime - 1;
 
             //Fix a bug from edep-sim
-            if(signalWindow == 1)
-                signalWindow = 0.5;
+            if(tof == 1)
+                tof = 0.5;
 
 
-            if(signalWindow > 0)
+            if(tof > 0)
             {
-                temp_gamma_Hit.SetTimeWindow(signalWindow);
-                temp_gamma_Hit.SetTimeWindowSmear(signalWindowSmear);
+                temp_gamma_Hit.SetTOF(tof);
+                temp_gamma_Hit.SetTOFSmear(tofSmear);
                 temp_gamma_Hit.SetLeverArm(leverArm);
                 temp_gamma_Hit.SetEnergyDeposit(t_gammaHitE[n_gammaHit]);
 
@@ -632,16 +619,12 @@ int main()
                 temp_gamma_Hit.SetTrueT(t_gammaHitT[n_gammaHit]);
                 temp_gamma_Hit.SetCubeE(t_gammaCubeE[n_gammaHit]);
 
-                temp_gamma_Hit.startingPoint[0] = t_gammaStartingPointX[n_gammaHit];
-                temp_gamma_Hit.startingPoint[1] = t_gammaStartingPointY[n_gammaHit];
-                temp_gamma_Hit.startingPoint[2] = t_gammaStartingPointZ[n_gammaHit];
 
                 temp_gamma_Hit.SetParentId(t_gammaParentId[n_gammaHit]);
                 temp_gamma_Hit.parentPdg = t_gammaParentPDG[n_gammaHit];
                 temp_gamma_Hit.SetHitPDG(t_gammaHitPDG[n_gammaHit]);
 
                 temp_gamma_Hit.SetVtxT(t_vtxTime);
-                temp_gamma_Hit.isEmpty = 0;
                 if(t_gammaStartingPointX[n_gammaHit] == t_piDeath[0])
                     temp_gamma_Hit.isFromPion = 1;
                 else
@@ -688,7 +671,7 @@ int main()
 
         //cube cluster vector
         std::vector<Hit> cube_cluster;
-        
+
         //push back the first hit
         cube_cluster.push_back(vectorHit.at(0));
         //erase that hit from cube_fired vector
@@ -701,34 +684,23 @@ int main()
             int size_before = cube_cluster.size();
             for(auto t:cube_cluster)
             {
-                std::tuple<float, float, float> direction[26];
-                direction[0]  = std::make_tuple(t.GetX()-1,t.GetY(),t.GetZ());
-                direction[1]  = std::make_tuple(t.GetX()+1,t.GetY(),t.GetZ());
-                direction[2]  = std::make_tuple(t.GetX(),t.GetY()-1,t.GetZ());
-                direction[3]  = std::make_tuple(t.GetX(),t.GetY()+1,t.GetZ());
-                direction[4]  = std::make_tuple(t.GetX(),t.GetY(),t.GetZ()-1);
-                direction[5]  = std::make_tuple(t.GetX(),t.GetY(),t.GetZ()+1);
-                direction[6]  = std::make_tuple(t.GetX()+1,t.GetY()+1,t.GetZ());
-                direction[7]  = std::make_tuple(t.GetX()+1,t.GetY(),t.GetZ()+1);
-                direction[8]  = std::make_tuple(t.GetX()+1,t.GetY()-1,t.GetZ());
-                direction[9]  = std::make_tuple(t.GetX()+1,t.GetY(),t.GetZ()-1);
-                direction[10] = std::make_tuple(t.GetX()-1,t.GetY()+1,t.GetZ());
-                direction[11] = std::make_tuple(t.GetX()-1,t.GetY(),t.GetZ()+1);
-                direction[12] = std::make_tuple(t.GetX()-1,t.GetY()-1,t.GetZ());
-                direction[13] = std::make_tuple(t.GetX()-1,t.GetY(),t.GetZ()-1);
-                direction[14] = std::make_tuple(t.GetX(),t.GetY()+1,t.GetZ()+1);
-                direction[15] = std::make_tuple(t.GetX(),t.GetY()-1,t.GetZ()+1);
-                direction[16] = std::make_tuple(t.GetX(),t.GetY()+1,t.GetZ()-1);
-                direction[17] = std::make_tuple(t.GetX(),t.GetY()-1,t.GetZ()-1);
-                direction[18] = std::make_tuple(t.GetX()+1,t.GetY()+1,t.GetZ()+1);
-                direction[19] = std::make_tuple(t.GetX()-1,t.GetY()-1,t.GetZ()-1);
-                direction[20] = std::make_tuple(t.GetX()-1,t.GetY()+1,t.GetZ()+1);
-                direction[21] = std::make_tuple(t.GetX()+1,t.GetY()-1,t.GetZ()+1);
-                direction[22] = std::make_tuple(t.GetX()+1,t.GetY()+1,t.GetZ()-1);
-                direction[23] = std::make_tuple(t.GetX()+1,t.GetY()-1,t.GetZ()-1);
-                direction[24] = std::make_tuple(t.GetX()-1,t.GetY()+1,t.GetZ()-1);
-                direction[25] = std::make_tuple(t.GetX()-1,t.GetY()-1,t.GetZ()+1);
-                for(int i = 0; i < 26; i++)
+                //making adjacent cube 
+                int N = 1;      //adjacent cube range
+                int number_of_direction_array = 0;
+                std::tuple<float, float, float> direction[(2*N+1)*(2*N+1)*(2*N+1)];
+                for(int x = -N; x < N+1; x++)
+                {
+                    for(int y = -N; y < N+1; y++)
+                    {
+                        for(int z = -N; z < N+1; z++)
+                        {
+                            direction[number_of_direction_array] = std::make_tuple(t.GetX()+x,t.GetY()+y,t.GetZ()+z);
+                            number_of_direction_array++;
+                        }
+                    }
+                }
+
+                for(int i = 0; i < (2*N+1)*(2*N+1)*(2*N+1); i++)
                 {
                     if(cube_fired.find(direction[i])->second.first == 1 && abs(t.GetT()-cube_fired.find(direction[i])->second.second) < 1)
                     {
@@ -743,6 +715,7 @@ int main()
                     }
                 }
             }
+
             int size_after = cube_cluster.size();
             if(size_after == size_before)
                 size_check = false;
@@ -755,6 +728,8 @@ int main()
             cube_YZPlane->Fill(t.GetY(),t.GetZ());
         }
 
+        //event display
+        //{
         //gStyle->SetFrameFillColor(1);
         //if(XYPlane_allhits->GetEntries() != 0)
         //{
@@ -788,6 +763,7 @@ int main()
         //cube_XYPlane->Reset();
         //cube_XZPlane->Reset();
         //cube_YZPlane->Reset();
+        //}
 
         //select earliest hit 
         Hit earliest_hit;
@@ -797,20 +773,20 @@ int main()
         {
             if(earliest_hit.GetParentId() == -1)
             {
-                earliest_hit.category = 1;
+                earliest_hit.SetCategory(1);
             }
             if(earliest_hit.GetParentId() >= 0)
-                earliest_hit.category = 2;
+                earliest_hit.SetCategory(2);
         }
         if(earliest_hit.IsGamma())
         {
             if(earliest_hit.GetParentId() == -1)
-                earliest_hit.category = 3;
+                earliest_hit.SetCategory(3);
             if(earliest_hit.GetParentId() > 0)
-                earliest_hit.category = 4;
+                earliest_hit.SetCategory(4);
         }
 
-        if(earliest_hit.category == -1000)
+        if(earliest_hit.GetCategory() == -1000)
             continue;
         if(earliest_hit.GetHitPDG() > 10000)
             continue;
@@ -847,7 +823,7 @@ int main()
         vec_vtx_to_hit[2] = earliest_hit.GetZ() - earliest_hit.GetVtxZ();
 
         //signal
-        if(earliest_hit.category == 1)
+        if(earliest_hit.GetCategory() == 1)
         {
             leverarm_signal->Fill(earliest_hit.GetLeverArm());
             leverArm = earliest_hit.GetLeverArm();
@@ -870,10 +846,10 @@ int main()
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_signal->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
-            TOF_signal->Fill(earliest_hit.GetTimeWindow());
-            tof = earliest_hit.GetTimeWindow();
+            beta_signal->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity;
+            TOF_signal->Fill(earliest_hit.GetTOF());
+            tof = earliest_hit.GetTOF();
             CubeE_signal->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             nCubeDis_signal->Fill(cube_cluster.size());
@@ -885,7 +861,7 @@ int main()
         }
 
         //secondary neutron
-        if(earliest_hit.category == 2)
+        if(earliest_hit.GetCategory() == 2)
         {
             leverarm_secondary_neutron->Fill(earliest_hit.GetLeverArm());
             leverArm = earliest_hit.GetLeverArm();
@@ -908,10 +884,10 @@ int main()
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_secondary_neutron->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
-            TOF_secondary_neutron->Fill(earliest_hit.GetTimeWindow());
-            tof = earliest_hit.GetTimeWindow();
+            beta_secondary_neutron->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity;
+            TOF_secondary_neutron->Fill(earliest_hit.GetTOF());
+            tof = earliest_hit.GetTOF();
             CubeE_secondary_neutron->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             nCubeDis_secondary_neutron->Fill(cube_cluster.size());
@@ -923,7 +899,7 @@ int main()
         }
 
         //primary gamma 
-        if(earliest_hit.category == 3)
+        if(earliest_hit.GetCategory() == 3)
         {
             leverarm_primary_gamma->Fill(earliest_hit.GetLeverArm());
             leverArm = earliest_hit.GetLeverArm();
@@ -946,10 +922,10 @@ int main()
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_primary_gamma->Fill((earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity);
-            beta = (earliest_hit.GetLeverArm()/(earliest_hit.GetTimeWindow()))/c_velocity;
-            TOF_primary_gamma->Fill(earliest_hit.GetTimeWindow());
-            tof = earliest_hit.GetTimeWindow();
+            beta_primary_gamma->Fill((earliest_hit.GetLeverArm()/(earliest_hit.GetTOF()))/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/(earliest_hit.GetTOF()))/c_velocity;
+            TOF_primary_gamma->Fill(earliest_hit.GetTOF());
+            tof = earliest_hit.GetTOF();
             CubeE_primary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             nCubeDis_primary_gamma->Fill(cube_cluster.size());
@@ -958,7 +934,7 @@ int main()
         }
 
         //secondary gamma
-        if(earliest_hit.category == 4)
+        if(earliest_hit.GetCategory() == 4)
         {
             leverarm_secondary_gamma->Fill(earliest_hit.GetLeverArm());
             leverArm = earliest_hit.GetLeverArm();
@@ -981,17 +957,25 @@ int main()
                 angle = -1000;
                 distanceCHit = -1000;
             }
-            beta_secondary_gamma->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity);
-            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTimeWindow())/c_velocity;
-            TOF_secondary_gamma->Fill(earliest_hit.GetTimeWindow());
-            tof = earliest_hit.GetTimeWindow();
+            beta_secondary_gamma->Fill((earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity);
+            beta = (earliest_hit.GetLeverArm()/earliest_hit.GetTOF())/c_velocity;
+            TOF_secondary_gamma->Fill(earliest_hit.GetTOF());
+            tof = earliest_hit.GetTOF();
             CubeE_secondary_gamma->Fill(earliest_hit.GetCubeE());
             cubeE = earliest_hit.GetCubeE();
             nCubeDis_secondary_gamma->Fill(cube_cluster.size());
             nCube = cube_cluster.size();
             hitPDG = earliest_hit.GetHitPDG();
         }
-        category = earliest_hit.category;
+        //transverse momentum
+        for(int inFS = 0; inFS < t_nFS; inFS++)
+        {
+            if(abs(t_fsPdg[inFS]) == 11 || abs(t_fsPdg[inFS]) == 13)
+            {
+            }
+        }
+        neutrinoE = t_NuEnergy;
+        category = earliest_hit.GetCategory();
         output_tree->Fill();
     }//end of event iterate
 
@@ -1007,7 +991,7 @@ int main()
 
     TCanvas * can = new TCanvas;
 
-    TLegend * legend = new TLegend(0.6,0.7,0.9,0.9);
+    TLegend * legend = new TLegend(0.1,0.7,0.5,0.9);
     legend->AddEntry(leverarm_signal,"signal","l");
     legend->AddEntry(leverarm_secondary_neutron,"secondary neutron","l");
     legend->AddEntry(leverarm_primary_gamma,"primary gamma","l");
@@ -1178,7 +1162,7 @@ int main()
     can->SaveAs("TOF.pdf");
     can->Clear();
     //}
-    
+
     //CubeE{
     CubeE_signal->Write();
     CubeE_signal->SetLineColor(2);
